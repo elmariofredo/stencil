@@ -1,6 +1,7 @@
 import { mockPlatform, mockDomApi } from '../../../testing/mocks';
 import { ComponentInstance, HostElement, PlatformApi } from '../../../util/interfaces';
-import { initLoad, initHostConstructor } from '../init';
+import { initHostConstructor } from '../host-constructor';
+import { initLoad } from '../init';
 
 
 describe('instance init', () => {

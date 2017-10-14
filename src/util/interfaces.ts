@@ -314,6 +314,23 @@ export interface CompiledModeStyles {
 }
 
 
+export interface CoreIncludeSections {
+  _include_custom_slot_: boolean;
+  _include_element_: boolean;
+  _include_event_: boolean;
+  _include_verbose_error_: boolean;
+  _include_listen_: boolean;
+  _include_mutation_obs_: boolean;
+  _include_prop_: boolean;
+  _include_prop_did_change_: boolean;
+  _include_prop_will_change_: boolean;
+  _include_scoped_css_: boolean;
+  _include_shadow_dom_: boolean;
+  _include_ssr_: boolean;
+  _include_state_: boolean;
+}
+
+
 export interface BuildConfig {
   configPath?: string;
   sys?: StencilSystem;
@@ -458,6 +475,7 @@ export interface BuildResults {
 
 
 export interface BuildContext {
+  manifestBundles?: ManifestBundle[];
   moduleFiles?: ModuleFiles;
   jsFiles?: FilesMap;
   cssFiles?: FilesMap;

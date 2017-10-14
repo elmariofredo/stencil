@@ -2,6 +2,7 @@ import { HostElement, PlatformApi } from '../../util/interfaces';
 import { getParentElement } from '../../util/helpers';
 import { initElementListeners } from './listeners';
 import { PRIORITY } from '../../util/constants';
+import { _include_listen_ } from '../../util/core-include';
 
 
 export function connectedCallback(plt: PlatformApi, elm: HostElement) {
@@ -14,10 +15,12 @@ export function connectedCallback(plt: PlatformApi, elm: HostElement) {
     // if somehow this node was reused, ensure we've removed this property
     delete elm._hasDestroyed;
 
-    // initialize our event listeners on the host element
-    // we do this now so that we can listening to events that may
-    // have fired even before the instance is ready
-    initElementListeners(plt, elm);
+    if (_include_listen_) {
+      // initialize our event listeners on the host element
+      // we do this now so that we can listening to events that may
+      // have fired even before the instance is ready
+      initElementListeners(plt, elm);
+    }
 
     // register this component as an actively
     // loading child to its parent component

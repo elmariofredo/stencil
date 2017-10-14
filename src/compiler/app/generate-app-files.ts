@@ -1,4 +1,4 @@
-import { AppRegistry, BuildConfig, BuildContext } from '../../util/interfaces';
+import { AppRegistry, BuildConfig, BuildContext, ManifestBundle } from '../../util/interfaces';
 import { CORE_NAME, GLOBAL_NAME } from '../../util/constants';
 import { formatComponentRegistry } from '../../util/data-serialize';
 import { generateCore, generateCoreES5WithPolyfills, APP_CORE_FILENAME_PLACEHOLDER } from './app-core';
@@ -24,6 +24,8 @@ export function generateAppFiles(config: BuildConfig, ctx: BuildContext) {
     components: formatComponentRegistry(ctx.registry),
     loader: `../${appLoader}`,
   };
+
+  const excludeSections = setCoreExcludeSections(ctx.manifestBundles);
 
   // bundle the app's entry file (if one was provided)
   return generateAppGlobal(config, ctx).then(globalJsContents => {
@@ -168,6 +170,11 @@ export function generateAppFiles(config: BuildConfig, ctx: BuildContext) {
   }).catch(err => {
     config.logger.error('generateAppFiles', err);
   });
+}
+
+
+export function setCoreExcludeSections(manifestBundle: ManifestBundle[]) {
+  // figure out which sections of the core code this build doesn't even need
 }
 
 

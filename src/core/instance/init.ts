@@ -1,66 +1,10 @@
-import { attributeChangedCallback } from './attribute-changed';
 import { ComponentInstance, HostElement, PlatformApi } from '../../util/interfaces';
-import { connectedCallback } from './connected';
-import { disconnectedCallback } from './disconnected';
 import { initEventEmitters } from './events';
 import { createMutationObserver } from './mutation-observer';
 import { initProxy } from './proxy';
-import { queueUpdate } from './update';
-import { render } from './render';
 import { replayQueuedEventsOnInstance } from './listeners';
 import { RUNTIME_ERROR } from '../../util/constants';
-
-
-export function initHostConstructor(plt: PlatformApi, HostElementConstructor: HostElement, hydratedCssClass?: string) {
-  // let's wire up our functions to the host element's prototype
-  // we can also inject our platform into each one that needs that api
-
-  HostElementConstructor.connectedCallback = function() {
-    connectedCallback(plt, (this as HostElement));
-  };
-
-  HostElementConstructor.attributeChangedCallback = function(attribName: string, oldVal: string, newVal: string) {
-    attributeChangedCallback(plt, (this as HostElement), attribName, oldVal, newVal);
-  };
-
-  HostElementConstructor.disconnectedCallback = function() {
-    disconnectedCallback(plt, (this as HostElement));
-  };
-
-  HostElementConstructor.componentOnReady = function(cb: (elm: HostElement) => void) {
-    let promise: Promise<any>;
-    if (!cb) {
-      promise = new Promise(resolve => {
-        cb = resolve;
-      });
-    }
-    componentOnReady((this as HostElement), cb);
-    return promise;
-  };
-
-  HostElementConstructor._queueUpdate = function() {
-    queueUpdate(plt, (this as HostElement));
-  };
-
-  HostElementConstructor.$initLoad = function() {
-    initLoad(plt, (this as HostElement), hydratedCssClass);
-  };
-
-  HostElementConstructor._render = function(isInitialRender: boolean) {
-    render(plt, (this as HostElement), plt.getComponentMeta((this as HostElement)), isInitialRender);
-  };
-}
-
-
-function componentOnReady(elm: HostElement, cb: (elm: HostElement) => void) {
-  if (!elm._hasDestroyed) {
-    if (elm._hasLoaded) {
-      cb(elm);
-    } else {
-      (elm._onReadyCallbacks = elm._onReadyCallbacks || []).push(cb);
-    }
-  }
-}
+import { _include_element_, _include_event_, _include_mutation_obs_ } from '../../util/core-include';
 
 
 export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
@@ -68,30 +12,36 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
   const cmpMeta = plt.getComponentMeta(elm);
   const instance: ComponentInstance = elm.$instance = new cmpMeta.componentModule();
 
-  // let's automatically add a reference to the host element on the instance
-  instance.__el = elm;
+  if (_include_element_) {
+    // let's automatically add a reference to the host element on the instance
+    instance.__el = elm;
+  }
 
   // so we've got an host element now, and a actual instance
   // let's wire them up together with getter/settings
   // the setters are use for change detection and knowing when to re-render
   initProxy(plt, elm, instance, cmpMeta);
 
-  // add each of the event emitters which wire up instance methods
-  // to fire off dom events from the host element
-  initEventEmitters(plt, cmpMeta.eventsMeta, instance);
+  if (_include_event_) {
+    // add each of the event emitters which wire up instance methods
+    // to fire off dom events from the host element
+    initEventEmitters(plt, cmpMeta.eventsMeta, instance);
 
-  // reply any event listeners on the instance that were queued up between the time
-  // the element was connected and before the instance was ready
-  try {
-    replayQueuedEventsOnInstance(elm);
-  } catch (e) {
-    plt.onError(e, RUNTIME_ERROR.QueueEventsError, elm);
+    // reply any event listeners on the instance that were queued up between the time
+    // the element was connected and before the instance was ready
+    try {
+      replayQueuedEventsOnInstance(elm);
+    } catch (e) {
+      plt.onError(e, RUNTIME_ERROR.QueueEventsError, elm);
+    }
   }
 
-  // Create a mutation observer that will identify changes to the elements
-  // children. When mutations occur rerender.  This only creates the observer
-  // it does not start observing.
-  createMutationObserver(plt, elm);
+  if (_include_mutation_obs_) {
+    // Create a mutation observer that will identify changes to the elements
+    // children. When mutations occur rerender.  This only creates the observer
+    // it does not start observing.
+    createMutationObserver(plt, elm);
+  }
 }
 
 

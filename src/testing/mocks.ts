@@ -3,7 +3,7 @@ import { BuildConfig, ComponentMeta, Diagnostic, DomApi, HostContentNodes, HostE
 import { createDomApi } from '../core/renderer/dom-api';
 import { createPlatformServer } from '../server/platform-server';
 import { createRendererPatch } from '../core/renderer/patch';
-import { initHostConstructor } from '../core/instance/init';
+import { initHostConstructor } from '../core/instance/host-constructor';
 import { noop } from '../util/helpers';
 import { validateBuildConfig } from '../util/validate-config';
 

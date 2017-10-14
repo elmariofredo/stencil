@@ -8,10 +8,11 @@ import { createRendererPatch } from '../core/renderer/patch';
 import { createQueueClient } from './queue-client';
 import { ENCAPSULATION, RUNTIME_ERROR, SSR_VNODE_ID } from '../util/constants';
 import { h, t } from '../core/renderer/h';
-import { initHostConstructor } from '../core/instance/init';
+import { initHostConstructor } from '../core/instance/host-constructor';
 import { parseComponentMeta, parseComponentRegistry } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
+import { _include_event_, _include_listen_ } from '../util/core-include';
 
 
 export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: Window, doc: Document, publicPath: string, hydratedCssClass: string): PlatformApi {
@@ -28,20 +29,23 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   // initialize Core global object
   Context.dom = createDomControllerClient(win, now);
 
-  Context.addListener = function addListener(elm, eventName, cb, opts) {
-    return addEventListener(plt, elm, eventName, cb, opts && opts.capture, opts && opts.passive);
-  };
+  if (_include_listen_) {
+    Context.addListener = function addListener(elm, eventName, cb, opts) {
+      return addEventListener(plt, elm, eventName, cb, opts && opts.capture, opts && opts.passive);
+    };
+    Context.enableListener = function enableListener(instance, eventName, enabled, attachTo) {
+      enableEventListener(plt, instance, eventName, enabled, attachTo);
+    };
+  }
 
-  Context.enableListener = function enableListener(instance, eventName, enabled, attachTo) {
-    enableEventListener(plt, instance, eventName, enabled, attachTo);
-  };
-
-  Context.emit = function emitEvent(elm: Element, eventName: string, data: EventEmitterData) {
-    elm && elm.dispatchEvent(new WindowCustomEvent(
-      Context.eventNameFn ? Context.eventNameFn(eventName) : eventName,
-      data
-    ));
-  };
+  if (_include_event_) {
+    Context.emit = function emitEvent(elm: Element, eventName: string, data: EventEmitterData) {
+      elm && elm.dispatchEvent(new WindowCustomEvent(
+        Context.eventNameFn ? Context.eventNameFn(eventName) : eventName,
+        data
+      ));
+    };
+  }
 
   Context.isClient = true;
   Context.isServer = Context.isPrerender = false;

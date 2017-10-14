@@ -2,7 +2,7 @@ import { BuildConfig, BuildContext, ComponentRegistry, Diagnostic, HostElement, 
   HostContentNodes, HydrateOptions, HydrateResults, VNode } from '../util/interfaces';
 import { createPlatformServer } from './platform-server';
 import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
-import { initHostConstructor } from '../core/instance/init';
+import { initHostConstructor } from '../core/instance/host-constructor';
 import { optimizeHtml } from '../compiler/html/optimize-html';
 
 

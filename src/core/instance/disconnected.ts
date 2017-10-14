@@ -2,6 +2,7 @@ import { detachListeners } from './listeners';
 import { HostElement, PlatformApi } from '../../util/interfaces';
 import { invokeDestroy } from '../renderer/patch';
 import { propagateElementLoaded } from './init';
+import { _include_did_unload_, _include_custom_slot_ } from '../../util/core-include';
 
 
 export function disconnectedCallback(plt: PlatformApi, elm: HostElement) {
@@ -18,12 +19,17 @@ export function disconnectedCallback(plt: PlatformApi, elm: HostElement) {
     // that they're good to go and loaded (cuz this one is on its way out)
     propagateElementLoaded(elm);
 
-    // call instance Did Unload and destroy instance stuff
-    // if we've created an instance for this
     const instance = elm.$instance;
     if (instance) {
-      // call the user's componentDidUnload if there is one
-      instance.componentDidUnload && instance.componentDidUnload();
+      // destroy instance stuff
+      // if we've created an instance for this
+
+      if (_include_did_unload_) {
+        // call the user's componentDidUnload if there is one
+        instance.componentDidUnload && instance.componentDidUnload();
+      }
+
+      // get outta town
       elm.$instance = instance.__el = instance.__values = instance.__values.__propWillChange = instance.__values.__propDidChange = null;
     }
 
@@ -34,9 +40,11 @@ export function disconnectedCallback(plt: PlatformApi, elm: HostElement) {
     // destroy the vnode and child vnodes if they exist
     invokeDestroy(elm._vnode);
 
-    if (elm._hostContentNodes) {
-      // overreacting here just to reduce any memory leak issues
-      elm._hostContentNodes = elm._hostContentNodes.defaultSlot = elm._hostContentNodes.namedSlots = null;
+    if (_include_custom_slot_) {
+      if (elm._hostContentNodes) {
+        // overreacting here just to reduce any memory leak issues
+        elm._hostContentNodes = elm._hostContentNodes.defaultSlot = elm._hostContentNodes.namedSlots = null;
+      }
     }
 
     // fuhgeddaboudit
