@@ -1,5 +1,5 @@
 import { PlatformApi, VNode } from '../../util/interfaces';
-
+import { _include_event_ } from '../../util/core-include';
 
 let DEFAULT_OPTS: any = null;
 
@@ -52,7 +52,7 @@ function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, ne
     }
 
   // Event Handlers
-  } else if (name[0] === 'o' && name[1] === 'n') {
+  } else if (_include_event_ && name[0] === 'o' && name[1] === 'n') {
 
     if (!DEFAULT_OPTS) {
       DEFAULT_OPTS = plt.getEventOptions();

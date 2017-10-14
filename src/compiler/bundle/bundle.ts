@@ -21,21 +21,21 @@ export function bundle(config: BuildConfig, ctx: BuildContext) {
     logger.debug(`bundle, distDir: ${config.distDir}`);
   }
 
-  ctx.manifestBundles = getManifestBundles(ctx.manifest.modulesFiles, ctx.manifest.bundles, ctx.diagnostics);
+  let manifestBundles = getManifestBundles(ctx.manifest.modulesFiles, ctx.manifest.bundles, ctx.diagnostics);
 
-  ctx.manifestBundles = validateBundleModules(ctx.manifestBundles);
+  manifestBundles = validateBundleModules(manifestBundles);
 
-  ctx.manifestBundles = sortBundles(ctx.manifestBundles);
+  manifestBundles = sortBundles(manifestBundles);
 
   // kick off style and module bundling at the same time
   return Promise.all([
-    bundleStyles(config, ctx, ctx.manifestBundles),
-    bundleModules(config, ctx, ctx.manifestBundles)
+    bundleStyles(config, ctx, manifestBundles),
+    bundleModules(config, ctx, manifestBundles)
 
   ]).then(() => {
     // both styles and modules are done bundling
     // generate the actual files to write
-    generateBundles(config, ctx, ctx.manifestBundles);
+    generateBundles(config, ctx, manifestBundles);
 
   }).catch(err => {
     catchError(ctx.diagnostics, err);

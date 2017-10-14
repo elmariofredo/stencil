@@ -4,7 +4,7 @@ import { createMutationObserver } from './mutation-observer';
 import { initProxy } from './proxy';
 import { replayQueuedEventsOnInstance } from './listeners';
 import { RUNTIME_ERROR } from '../../util/constants';
-import { _include_element_, _include_event_, _include_mutation_obs_ } from '../../util/core-include';
+import { _include_element_, _include_event_, _include_mutation_obs_, _include_did_load_, _include_prop_, _include_state_ } from '../../util/core-include';
 
 
 export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
@@ -17,10 +17,12 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
     instance.__el = elm;
   }
 
-  // so we've got an host element now, and a actual instance
-  // let's wire them up together with getter/settings
-  // the setters are use for change detection and knowing when to re-render
-  initProxy(plt, elm, instance, cmpMeta);
+  if (_include_prop_ || _include_state_) {
+    // so we've got an host element now, and a actual instance
+    // let's wire them up together with getter/settings
+    // the setters are use for change detection and knowing when to re-render
+    initProxy(plt, elm, instance, cmpMeta);
+  }
 
   if (_include_event_) {
     // add each of the event emitters which wire up instance methods
@@ -71,11 +73,13 @@ export function initLoad(plt: PlatformApi, elm: HostElement, hydratedCssClass?: 
         delete elm._onReadyCallbacks;
       }
 
-      // fire off the user's componentDidLoad method (if one was provided)
-      // componentDidLoad only runs ONCE, after the instance's element has been
-      // assigned as the host element, and AFTER render() has been called
-      // we'll also fire this method off on the element, just to
-      instance.componentDidLoad && instance.componentDidLoad();
+      if (_include_did_load_) {
+        // fire off the user's componentDidLoad method (if one was provided)
+        // componentDidLoad only runs ONCE, after the instance's element has been
+        // assigned as the host element, and AFTER render() has been called
+        // we'll also fire this method off on the element, just to
+        instance.componentDidLoad && instance.componentDidLoad();
+      }
 
     } catch (e) {
       plt.onError(e, RUNTIME_ERROR.DidLoadError, elm);

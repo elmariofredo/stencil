@@ -1,8 +1,8 @@
 import { detachListeners } from './listeners';
 import { HostElement, PlatformApi } from '../../util/interfaces';
-import { invokeDestroy } from '../renderer/patch';
+import { destroyListeners } from '../renderer/patch';
 import { propagateElementLoaded } from './init';
-import { _include_did_unload_, _include_custom_slot_ } from '../../util/core-include';
+import { _include_did_unload_, _include_custom_slot_, _include_listen_ } from '../../util/core-include';
 
 
 export function disconnectedCallback(plt: PlatformApi, elm: HostElement) {
@@ -33,12 +33,14 @@ export function disconnectedCallback(plt: PlatformApi, elm: HostElement) {
       elm.$instance = instance.__el = instance.__values = instance.__values.__propWillChange = instance.__values.__propDidChange = null;
     }
 
-    // detatch any event listeners that may have been added
-    // this will also set _listeners to null if there are any
-    detachListeners(elm);
+    if (_include_listen_) {
+      // detatch any event listeners that may have been added
+      // this will also set _listeners to null if there are any
+      detachListeners(elm);
 
-    // destroy the vnode and child vnodes if they exist
-    invokeDestroy(elm._vnode);
+      // destroy the vnode and child vnodes if they exist
+      destroyListeners(elm._vnode);
+    }
 
     if (_include_custom_slot_) {
       if (elm._hostContentNodes) {

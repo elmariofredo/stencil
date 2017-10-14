@@ -2,6 +2,7 @@ import { HostElement, PlatformApi } from '../../util/interfaces';
 import { initComponentInstance } from './init';
 import { RUNTIME_ERROR } from '../../util/constants';
 import { stopObserving, startObserving } from './mutation-observer';
+import { _include_mutation_obs_, _include_will_load_, _include_will_update_, _include_did_update_, _include_render_ } from '../../util/core-include';
 
 
 export function queueUpdate(plt: PlatformApi, elm: HostElement) {
@@ -26,7 +27,7 @@ export function update(plt: PlatformApi, elm: HostElement) {
   // this node, so be sure to do nothing if we've already disconnected
   if (!elm._hasDestroyed) {
     const isInitialLoad = !elm.$instance;
-    let userPromise: Promise<void>;
+    let userLifecyclePromise: Promise<void>;
 
     if (isInitialLoad) {
       const ancestorHostElement = elm._ancestorHostElement;
@@ -48,22 +49,24 @@ export function update(plt: PlatformApi, elm: HostElement) {
         // create the instance from the user's component class
         initComponentInstance(plt, elm);
 
-        // fire off the user's componentWillLoad method (if one was provided)
-        // componentWillLoad only runs ONCE, after instance's element has been
-        // assigned as the host element, but BEFORE render() has been called
-        try {
-          if (elm.$instance.componentWillLoad) {
-            userPromise = elm.$instance.componentWillLoad();
+        if (_include_will_load_) {
+          // fire off the user's componentWillLoad method (if one was provided)
+          // componentWillLoad only runs ONCE, after instance's element has been
+          // assigned as the host element, but BEFORE render() has been called
+          try {
+            if (elm.$instance.componentWillLoad) {
+              userLifecyclePromise = elm.$instance.componentWillLoad();
+            }
+          } catch (e) {
+            plt.onError(e, RUNTIME_ERROR.WillLoadError, elm);
           }
-        } catch (e) {
-          plt.onError(e, RUNTIME_ERROR.WillLoadError, elm);
         }
 
       } catch (e) {
         plt.onError(e, RUNTIME_ERROR.InitInstanceError, elm, true);
       }
 
-    } else {
+    } else if (_include_will_update_) {
       // already created an instance and this is an update
       // fire off the user's componentWillUpdate method (if one was provided)
       // componentWillUpdate runs BEFORE render() has been called
@@ -71,18 +74,18 @@ export function update(plt: PlatformApi, elm: HostElement) {
       // get the returned promise (if one was provided)
       try {
         if (elm.$instance.componentWillUpdate) {
-          userPromise = elm.$instance.componentWillUpdate();
+          userLifecyclePromise = elm.$instance.componentWillUpdate();
         }
       } catch (e) {
         plt.onError(e, RUNTIME_ERROR.WillUpdateError, elm);
       }
     }
 
-    if (userPromise && userPromise.then) {
+    if (userLifecyclePromise && userLifecyclePromise.then) {
       // looks like the user return a promise!
       // let's not actually kick off the render
       // until the user has resolved their promise
-      userPromise.then(function componentWillLoadResolved() {
+      userLifecyclePromise.then(function componentWillLoadResolved() {
         renderUpdate(plt, elm, isInitialLoad);
       });
 
@@ -96,22 +99,28 @@ export function update(plt: PlatformApi, elm: HostElement) {
 
 
 export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: boolean) {
-  // stop the observer so that we do not observe our own changes
-  stopObserving(plt, elm);
-
-  // if this component has a render function, let's fire
-  // it off and generate a vnode for this
-  try {
-    elm._render(!isInitialLoad);
-    // _hasRendered was just set
-    // _onRenderCallbacks were all just fired off
-
-  } catch (e) {
-    plt.onError(e, RUNTIME_ERROR.RenderError, elm, true);
+  if (_include_mutation_obs_) {
+    // stop the observer so that we do not observe our own changes
+    stopObserving(plt, elm);
   }
 
-  // after render we need to start the observer back up.
-  startObserving(plt, elm);
+  if (_include_render_) {
+    // if this component has a render function, let's fire
+    // it off and generate a vnode for this
+    try {
+      elm._render(!isInitialLoad);
+      // _hasRendered was just set
+      // _onRenderCallbacks were all just fired off
+
+    } catch (e) {
+      plt.onError(e, RUNTIME_ERROR.RenderError, elm, true);
+    }
+  }
+
+  if (_include_mutation_obs_) {
+    // after render we need to start the observer back up.
+    startObserving(plt, elm);
+  }
 
   try {
     if (isInitialLoad) {
@@ -119,7 +128,7 @@ export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: 
       elm.$initLoad();
       // componentDidLoad just fired off
 
-    } else {
+    } else if (_include_did_update_) {
       // fire off the user's componentDidUpdate method (if one was provided)
       // componentDidUpdate runs AFTER render() has been called
       // but only AFTER an UPDATE and not after the intial render

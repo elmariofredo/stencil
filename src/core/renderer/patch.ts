@@ -12,6 +12,7 @@ import { ENCAPSULATION } from '../../util/constants';
 import { isDef, isUndef } from '../../util/helpers';
 import { SSR_VNODE_ID, SSR_CHILD_ID } from '../../util/constants';
 import { updateElement, eventProxy } from './update-dom-node';
+import { _include_custom_slot_, _include_scoped_css_, _include_shadow_dom_, _include_ssr_, _include_svg_render_, _include_listen_ } from '../../util/core-include';
 
 let isSvgMode = false;
 
@@ -24,7 +25,8 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
   function createElm(vnode: VNode, parentElm: Node, childIndex: number) {
     let i = 0;
 
-    if (vnode.vtag === 'slot' && !useNativeShadowDom) {
+    if (_include_custom_slot_ && vnode.vtag === 'slot' && !useNativeShadowDom) {
+      // this is the custom slot renderer
 
       if (hostContentNodes) {
         // special case for manually relocating host content nodes
@@ -64,7 +66,8 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
         }
       }
 
-      // this was a slot node, we do not create slot elements, our work here is done
+      // this was a slot node using the custom slot renderer
+      // we do not create slot elements, our work here is done
       // no need to return any element to be added to the dom
       return null;
     }
@@ -75,8 +78,11 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
     } else {
       // create element
-      const elm = vnode.elm = (isSvgMode || vnode.vtag === 'svg' ? domApi.$createElementNS('http://www.w3.org/2000/svg', vnode.vtag) : domApi.$createElement(vnode.vtag));
-      isSvgMode = vnode.vtag === 'svg' ? true : (vnode.vtag === 'foreignObject' ? false : isSvgMode);
+      const elm = vnode.elm = ((_include_svg_render_ && isSvgMode || vnode.vtag === 'svg') ? domApi.$createElementNS('http://www.w3.org/2000/svg', vnode.vtag) : domApi.$createElement(vnode.vtag));
+
+      if (_include_svg_render_) {
+        isSvgMode = vnode.vtag === 'svg' ? true : (vnode.vtag === 'foreignObject' ? false : isSvgMode);
+      }
 
       // add css classes, attrs, props, listeners, etc.
       updateElement(plt, null, vnode, isSvgMode);
@@ -89,7 +95,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
       const children = vnode.vchildren;
 
-      if (isDef(ssrId)) {
+      if (_include_ssr_ && isDef(ssrId)) {
         // SSR ONLY: this is an SSR render and this
         // logic does not run on the client
 
@@ -109,7 +115,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
           // return node could have been null
           if (childNode) {
-            if (isDef(ssrId) && childNode.nodeType === 3) {
+            if (_include_ssr_ && isDef(ssrId) && childNode.nodeType === 3) {
               // SSR ONLY: add the text node's start comment
               domApi.$appendChild(elm, domApi.$createComment('s.' + ssrId + '.' + i));
             }
@@ -117,7 +123,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
             // append our new node
             domApi.$appendChild(elm, childNode);
 
-            if (isDef(ssrId) && childNode.nodeType === 3) {
+            if (_include_ssr_ && isDef(ssrId) && childNode.nodeType === 3) {
               // SSR ONLY: add the text node's end comment
               domApi.$appendChild(elm, domApi.$createComment('/'));
               domApi.$appendChild(elm, domApi.$createTextNode(' '));
@@ -158,8 +164,8 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
       var vnode = vnodes[startIdx];
 
       if (isDef(vnode)) {
-        if (isDef(vnode.elm)) {
-          invokeDestroy(vnode);
+        if (_include_listen_ && isDef(vnode.elm)) {
+          destroyListeners(vnode);
         }
 
         domApi.$removeChild(parentElm, vnode.elm);
@@ -286,8 +292,10 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
     const oldChildren = oldVNode.vchildren;
     const newChildren = newVNode.vchildren;
 
-    isSvgMode = newVNode.elm && newVNode.elm.parentElement != null && (newVNode.elm as SVGElement).ownerSVGElement !== undefined;
-    isSvgMode = newVNode.vtag === 'svg' ? true : (newVNode.vtag === 'foreignObject' ? false : isSvgMode);
+    if (_include_svg_render_) {
+      isSvgMode = newVNode.elm && newVNode.elm.parentElement != null && (newVNode.elm as SVGElement).ownerSVGElement !== undefined;
+      isSvgMode = newVNode.vtag === 'svg' ? true : (newVNode.vtag === 'foreignObject' ? false : isSvgMode);
+    }
 
     if (isUndef(newVNode.vtext)) {
       // element node
@@ -317,7 +325,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
         removeVnodes(elm, oldChildren, 0, oldChildren.length - 1);
       }
 
-    } else if (elm._hostContentNodes && elm._hostContentNodes.defaultSlot) {
+    } else if (_include_custom_slot_ && elm._hostContentNodes && elm._hostContentNodes.defaultSlot) {
       // this element has slotted content
       let parentElement = elm._hostContentNodes.defaultSlot[0].parentElement;
       domApi.$setTextContent(parentElement, newVNode.vtext);
@@ -353,14 +361,14 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
     useNativeShadowDom = (encapsulation === ENCAPSULATION.ShadowDom && supportsNativeShadowDom);
 
     if (!isUpdate) {
-      if (useNativeShadowDom) {
+      if (_include_shadow_dom_ && useNativeShadowDom) {
         // this component SHOULD use native slot/shadow dom
         // this browser DOES support native shadow dom
         // and this is the first render
         // let's create that shadow root
         oldVNode.elm = (oldVNode.elm as HTMLElement).attachShadow({ mode: 'open' });
 
-      } else if (scopeId) {
+      } else if (_include_scoped_css_ && scopeId) {
         // this host element should use scoped css
         // add the scope attribute to the host
         domApi.$setAttribute(oldVNode.elm, scopeId + '-host', '');
@@ -382,7 +390,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 }
 
 
-export function invokeDestroy(vnode: VNode) {
+export function destroyListeners(vnode: VNode) {
   if (vnode) {
     const elm = (vnode.elm as any);
     if (elm._listeners) {
@@ -393,7 +401,7 @@ export function invokeDestroy(vnode: VNode) {
 
     if (isDef(vnode.vchildren)) {
       for (var i = 0; i < vnode.vchildren.length; ++i) {
-        invokeDestroy(vnode.vchildren[i]);
+        destroyListeners(vnode.vchildren[i]);
       }
     }
   }

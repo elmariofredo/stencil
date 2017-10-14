@@ -475,7 +475,6 @@ export interface BuildResults {
 
 
 export interface BuildContext {
-  manifestBundles?: ManifestBundle[];
   moduleFiles?: ModuleFiles;
   jsFiles?: FilesMap;
   cssFiles?: FilesMap;
@@ -499,6 +498,7 @@ export interface BuildContext {
   watcher?: FSWatcher;
   tsConfig?: any;
   hasIndexHtml?: boolean;
+  coreIncludeSections?: CoreIncludeSections;
 
   isRebuild?: boolean;
   isChangeBuild?: boolean;
