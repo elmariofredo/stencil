@@ -1,5 +1,5 @@
 import { BANNER, ENCAPSULATION } from '../util/constants';
-import { BuildConfig, BuildContext, Diagnostic, FilesMap, StencilSystem } from '../util/interfaces';
+import { BuildConfig, BuildContext, CoreBuild, Diagnostic, FilesMap, StencilSystem } from '../util/interfaces';
 
 
 export function getBuildContext(ctx?: BuildContext) {
@@ -30,7 +30,7 @@ export function getBuildContext(ctx?: BuildContext) {
 export function resetBuildContext(ctx: BuildContext) {
   ctx.registry = {};
   ctx.manifest = {};
-  ctx.coreBuild = {};
+  ctx.coreBuild = resetCoreBuild();
   ctx.diagnostics = [];
   ctx.sassBuildCount = 0;
   ctx.transpileBuildCount = 0;
@@ -39,6 +39,50 @@ export function resetBuildContext(ctx: BuildContext) {
   ctx.styleBundleCount = 0;
   ctx.prerenderedUrls = 0;
   delete ctx.localPrerenderServer;
+}
+
+
+function resetCoreBuild() {
+  const coreBuild: CoreBuild = {
+    $build_es2015: false,
+    $build_es5: false,
+    $build_verbose_error: false,
+    $build_custom_slot: false,
+
+    $build_ssr_parser: false,
+    $build_ssr_serializer: false,
+
+    $build_styles: false,
+    $build_scoped_css: false,
+    $build_shadow_dom: false,
+
+    $build_render: false,
+    $build_host_render: false,
+    $build_svg_render: false,
+
+    // decorators
+    $build_element: false,
+    $build_event: false,
+    $build_listener: false,
+    $build_method: false,
+    $build_observe_attr: false,
+    $build_prop: false,
+    $build_prop_connect: false,
+    $build_prop_context: false,
+    $build_prop_did_change: false,
+    $build_prop_will_change: false,
+    $build_state: false,
+
+    // lifecycle events
+    $build_did_load: false,
+    $build_will_load: false,
+    $build_did_update: false,
+    $build_will_update: false,
+    $build_did_unload: false,
+    $build_will_unload: false
+  };
+
+  return coreBuild;
 }
 
 

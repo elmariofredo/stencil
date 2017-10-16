@@ -20,7 +20,11 @@ function getMinifyOptions(config: BuildConfig, coreBuild: CoreBuild) {
 
   opts.global_defs = {};
 
+  const coreBuildKeys = Object.keys(coreBuild).filter(c => c.startsWith('$build_'));
 
+  coreBuildKeys.forEach(coreBuildKey => {
+    opts.global_defs[coreBuildKey] = (coreBuild as any)[coreBuildKey];
+  });
 
   return opts;
 }

@@ -3,7 +3,6 @@ import { ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../../util/constants';
 import { generatePreamble, normalizePath } from '../util';
 import { getAppFileName } from './generate-app-files';
 import { minifyCore } from './minify-core';
-import { transpileCoreBuild } from '../transpile/core-build';
 
 
 export function generateCore(config: BuildConfig, ctx: BuildContext, globalJsContent: string[]) {
@@ -30,24 +29,16 @@ export function generateCore(config: BuildConfig, ctx: BuildContext, globalJsCon
 
 
 function generateCoreBuild(config: BuildConfig, ctx: BuildContext, coreBuild: CoreBuild, globalJsContent: string[], coreContent: string, polyfillsContent: string) {
-  // using the original core content, transpile it again so we
-  // can hardcode which features should and should not go in the core builds
-  const transpileResults = transpileCoreBuild(coreBuild, coreContent);
-
-  if (transpileResults.diagnostics) {
-    // oh no, transpile errors!
-    ctx.diagnostics.push(...transpileResults.diagnostics);
-  }
-
-  // process the transpiled code by removing
-  // unused code and minify when configured to do so
-  let jsContent = minifyCore(config, ctx, transpileResults.code);
 
   // concat the global js and transpiled code together
-  jsContent = [
+  let jsContent = [
     globalJsContent.join('\n'),
-    jsContent
+    coreContent
   ].join('\n').trim();
+
+  // hardcode which features should and should not go in the core builds
+  // process the transpiled code by removing unused code and minify when configured to do so
+  jsContent = minifyCore(config, ctx, coreBuild, jsContent);
 
   // wrap the core js code together
   jsContent = wrapCoreJs(config, jsContent);
