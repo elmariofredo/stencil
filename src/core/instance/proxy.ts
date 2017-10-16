@@ -4,7 +4,7 @@ import { isDef } from '../../util/helpers';
 import { MEMBER_TYPE, PROP_CHANGE } from '../../util/constants';
 import { parsePropertyValue } from '../../util/data-parse';
 import { queueUpdate } from './update';
-import { _include_prop_will_change_, _include_prop_did_change_, _include_prop_context_, _include_prop_connect_, _include_method_, _include_element_, _include_state_, _include_verbose_error_ } from '../../util/core-include';
+import { $build_prop_will_change, $build_prop_did_change, $build_prop_context, $build_prop_connect, $build_method, $build_element, $build_state, $build_verbose_error } from '../../util/core-build';
 
 
 export function initProxy(plt: PlatformApi, elm: HostElement, instance: ComponentInstance, cmpMeta: ComponentMeta) {
@@ -12,12 +12,12 @@ export function initProxy(plt: PlatformApi, elm: HostElement, instance: Componen
   // getters/setters with the same name, and then do change detection
   const values: ComponentInternalValues = instance.__values = {};
 
-  if (_include_prop_will_change_ && cmpMeta.propsWillChangeMeta) {
+  if ($build_prop_will_change && cmpMeta.propsWillChangeMeta) {
     // this component has prop WILL change methods, so init the object to store them
     values.__propWillChange = {};
   }
 
-  if (_include_prop_did_change_ && cmpMeta.propsDidChangeMeta) {
+  if ($build_prop_did_change && cmpMeta.propsDidChangeMeta) {
     // this component has prop DID change methods, so init the object to store them
     values.__propDidChange = {};
   }
@@ -28,23 +28,23 @@ export function initProxy(plt: PlatformApi, elm: HostElement, instance: Componen
       var memberMeta = cmpMeta.membersMeta[memberName];
       var memberType = memberMeta.memberType;
 
-      if (_include_prop_context_ && memberType === MEMBER_TYPE.PropContext) {
+      if ($build_prop_context && memberType === MEMBER_TYPE.PropContext) {
         // @Prop({ context: 'config' })
         var contextObj = plt.getContextItem(memberMeta.ctrlId);
         if (isDef(contextObj)) {
           defineProperty(instance, memberName, (contextObj.getContext && contextObj.getContext(elm)) || contextObj);
         }
 
-      } else if (_include_prop_connect_ && memberType === MEMBER_TYPE.PropConnect) {
+      } else if ($build_prop_connect && memberType === MEMBER_TYPE.PropConnect) {
         // @Prop({ connect: 'ion-loading-ctrl' })
         defineProperty(instance, memberName, plt.propConnect(memberMeta.ctrlId));
 
-      } else if (_include_method_ && memberType === MEMBER_TYPE.Method) {
+      } else if ($build_method && memberType === MEMBER_TYPE.Method) {
         // add a value getter on the dom's element instance
         // pointed at the instance's method
         defineProperty(elm, memberName, instance[memberName].bind(instance));
 
-      } else if (_include_element_ && memberType === MEMBER_TYPE.Element) {
+      } else if ($build_element && memberType === MEMBER_TYPE.Element) {
         // add a getter to the element reference using
         // the member name the component meta provided
         defineProperty(instance, memberName, elm);
@@ -82,7 +82,7 @@ function initProp(
   propDidChangeMeta: PropChangeMeta[]
 ) {
 
-  if (_include_state_ && memberType === MEMBER_TYPE.State) {
+  if ($build_state && memberType === MEMBER_TYPE.State) {
     // @State() property, so copy the value directly from the instance
     // before we create getters/setters on this same property name
     internalValues[memberName] = (<any>instance)[memberName];
@@ -107,7 +107,7 @@ function initProp(
   }
 
   let i = 0;
-  if (_include_prop_will_change_ && propWillChangeMeta) {
+  if ($build_prop_will_change && propWillChangeMeta) {
     // there are prop WILL change methods for this component
     for (; i < propWillChangeMeta.length; i++) {
       if (propWillChangeMeta[i][PROP_CHANGE.PropName] === memberName) {
@@ -120,7 +120,7 @@ function initProp(
     }
   }
 
-  if (_include_prop_did_change_ && propDidChangeMeta) {
+  if ($build_prop_did_change && propDidChangeMeta) {
     // there are prop DID change methods for this component
     for (i = 0; i < propDidChangeMeta.length; i++) {
       if (propDidChangeMeta[i][PROP_CHANGE.PropName] === memberName) {
@@ -142,11 +142,10 @@ function initProp(
     // check our new property value against our internal value
     const oldVal = internalValues[memberName];
 
-    // TODO: account for Arrays/Objects
     if (newVal !== oldVal) {
       // gadzooks! the property's value has changed!!
 
-      if (_include_prop_will_change_ && internalValues.__propWillChange && internalValues.__propWillChange[memberName]) {
+      if ($build_prop_will_change && internalValues.__propWillChange && internalValues.__propWillChange[memberName]) {
         // this instance is watching for when this property WILL change
         internalValues.__propWillChange[memberName](newVal, oldVal);
       }
@@ -154,7 +153,7 @@ function initProp(
       // set our new value!
       internalValues[memberName] = newVal;
 
-      if (_include_prop_did_change_ && internalValues.__propDidChange && internalValues.__propDidChange[memberName]) {
+      if ($build_prop_did_change && internalValues.__propDidChange && internalValues.__propDidChange[memberName]) {
         // this instance is watching for when this property DID change
         internalValues.__propDidChange[memberName](newVal, oldVal);
       }
@@ -179,7 +178,7 @@ function initProp(
     // have both getters and setters on the instance
     defineProperty(instance, memberName, undefined, getValue, setValue);
 
-  } else if (_include_verbose_error_ && memberType === MEMBER_TYPE.Prop) {
+  } else if ($build_verbose_error && memberType === MEMBER_TYPE.Prop) {
     // @Prop() only has getters, but not setters on the instance
     defineProperty(instance, memberName, undefined, getValue, function invalidSetValue() {
       // this is not a stateful @Prop()

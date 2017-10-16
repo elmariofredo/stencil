@@ -2,7 +2,7 @@ import { HostElement, PlatformApi } from '../../util/interfaces';
 import { initComponentInstance } from './init';
 import { RUNTIME_ERROR } from '../../util/constants';
 import { stopObserving, startObserving } from './mutation-observer';
-import { _include_mutation_obs_, _include_will_load_, _include_will_update_, _include_did_update_, _include_render_ } from '../../util/core-include';
+import { $build_custom_slot, $build_will_load, $build_will_update, $build_did_update, $build_render } from '../../util/core-build';
 
 
 export function queueUpdate(plt: PlatformApi, elm: HostElement) {
@@ -49,7 +49,7 @@ export function update(plt: PlatformApi, elm: HostElement) {
         // create the instance from the user's component class
         initComponentInstance(plt, elm);
 
-        if (_include_will_load_) {
+        if ($build_will_load) {
           // fire off the user's componentWillLoad method (if one was provided)
           // componentWillLoad only runs ONCE, after instance's element has been
           // assigned as the host element, but BEFORE render() has been called
@@ -66,7 +66,7 @@ export function update(plt: PlatformApi, elm: HostElement) {
         plt.onError(e, RUNTIME_ERROR.InitInstanceError, elm, true);
       }
 
-    } else if (_include_will_update_) {
+    } else if ($build_will_update) {
       // already created an instance and this is an update
       // fire off the user's componentWillUpdate method (if one was provided)
       // componentWillUpdate runs BEFORE render() has been called
@@ -99,12 +99,12 @@ export function update(plt: PlatformApi, elm: HostElement) {
 
 
 export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: boolean) {
-  if (_include_mutation_obs_) {
+  if ($build_custom_slot) {
     // stop the observer so that we do not observe our own changes
     stopObserving(plt, elm);
   }
 
-  if (_include_render_) {
+  if ($build_render) {
     // if this component has a render function, let's fire
     // it off and generate a vnode for this
     try {
@@ -117,7 +117,7 @@ export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: 
     }
   }
 
-  if (_include_mutation_obs_) {
+  if ($build_custom_slot) {
     // after render we need to start the observer back up.
     startObserving(plt, elm);
   }
@@ -128,7 +128,7 @@ export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: 
       elm.$initLoad();
       // componentDidLoad just fired off
 
-    } else if (_include_did_update_) {
+    } else if ($build_did_update) {
       // fire off the user's componentDidUpdate method (if one was provided)
       // componentDidUpdate runs AFTER render() has been called
       // but only AFTER an UPDATE and not after the intial render

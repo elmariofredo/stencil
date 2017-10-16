@@ -2,7 +2,7 @@ import { ATTR_CASE, MEMBER_TYPE, PROP_TYPE } from './constants';
 import { ComponentMeta, ComponentRegistry, LoadComponentMeta, ComponentEventData,
   ComponentListenersData, ComponentMemberData, LoadComponentRegistry } from '../util/interfaces';
 import { isDef } from './helpers';
-import { toDashCase } from '../util/helpers';
+import { toDashCase, toLowerCase } from '../util/helpers';
 
 
 export function parseComponentRegistry(cmpRegistryData: LoadComponentRegistry, registry: ComponentRegistry, attr?: number) {
@@ -62,7 +62,7 @@ function parseMembersData(cmpMeta: ComponentMeta, memberData: ComponentMemberDat
       var d = memberData[i];
       cmpMeta.membersMeta[d[0]] = {
         memberType: d[1],
-        attribName: attr === ATTR_CASE.LowerCase ? d[0].toLowerCase() : toDashCase(d[0]),
+        attribName: attr === ATTR_CASE.LowerCase ? toLowerCase(d[0]) : toDashCase(d[0]),
         propType: d[2],
         ctrlId: d[3]
       };

@@ -1,5 +1,5 @@
 import { addEventListener, enableEventListener } from '../core/instance/listeners';
-import { assignHostContentSlots, createVNodesFromSsr } from '../core/renderer/slot';
+import { assignHostContentSlots, parseVNodesFromSsr } from '../core/renderer/slot';
 import { AppGlobal, BundleCallbacks, ComponentMeta, ComponentRegistry, CoreContext,
   EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi } from '../util/interfaces';
 import { createDomControllerClient } from './dom-controller-client';
@@ -12,7 +12,7 @@ import { initHostConstructor } from '../core/instance/host-constructor';
 import { parseComponentMeta, parseComponentRegistry } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
-import { _include_event_, _include_listen_, _include_shadow_dom_, _include_observe_attr_, _include_styles_, _include_scoped_css_, _include_prop_connect_, _include_prop_context_ } from '../util/core-include';
+import { $build_render, $build_custom_slot, $build_ssr_parse, $build_event, $build_listener, $build_shadow_dom, $build_observe_attr, $build_styles, $build_scoped_css, $build_prop_connect, $build_prop_context } from '../util/core-build';
 
 
 export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: Window, doc: Document, publicPath: string, hydratedCssClass: string): PlatformApi {
@@ -29,7 +29,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   // initialize Core global object
   Context.dom = createDomControllerClient(win, now);
 
-  if (_include_listen_) {
+  if ($build_listener) {
     Context.addListener = function addListener(elm, eventName, cb, opts) {
       return addEventListener(plt, elm, eventName, cb, opts && opts.capture, opts && opts.passive);
     };
@@ -38,7 +38,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
     };
   }
 
-  if (_include_event_) {
+  if ($build_event) {
     Context.emit = function emitEvent(elm: Element, eventName: string, data: EventEmitterData) {
       elm && elm.dispatchEvent(new WindowCustomEvent(
         Context.eventNameFn ? Context.eventNameFn(eventName) : eventName,
@@ -74,10 +74,12 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
     isClient: true
   };
 
-  const supportsNativeShadowDom = !!(Element.prototype.attachShadow);
+  const supportsNativeShadowDom = ($build_shadow_dom && !!(Element.prototype.attachShadow));
 
   // create the renderer that will be used
-  plt.render = createRendererPatch(plt, domApi, supportsNativeShadowDom);
+  if ($build_render) {
+    plt.render = createRendererPatch(plt, domApi, supportsNativeShadowDom);
+  }
 
   // setup the root element which is the mighty <html> tag
   // the <html> has the final say of when the app has loaded
@@ -90,15 +92,17 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   };
 
 
-  // if the HTML was generated from SSR
-  // then let's walk the tree and generate vnodes out of the data
-  createVNodesFromSsr(domApi, rootElm);
+  if ($build_ssr_parse) {
+    // if the HTML was generated from SSR then let's
+    // walk the tree and generate vnodes out of the data
+    parseVNodesFromSsr(domApi, rootElm);
+  }
 
 
   function getComponentMeta(elm: Element) {
     // get component meta using the element
     // important that the registry has upper case tag names
-    return registry[elm.tagName.toLowerCase()];
+    return registry[domApi.$tagName(elm)];
   }
 
   function connectHostElement(cmpMeta: ComponentMeta, elm: HostElement) {
@@ -111,14 +115,14 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
     }
 
     // host element has been connected to the DOM
-    if (!domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(supportsNativeShadowDom, cmpMeta)) {
+    if ($build_custom_slot && !domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(supportsNativeShadowDom, cmpMeta)) {
       // only required when we're not using native shadow dom (slot)
       // this host element was NOT created with SSR
       // let's pick out the inner content for slot projection
       assignHostContentSlots(domApi, elm, cmpMeta.slotMeta);
     }
 
-    if (_include_shadow_dom_ && !supportsNativeShadowDom && cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
+    if ($build_shadow_dom && !supportsNativeShadowDom && cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
       // this component should use shadow dom
       // but this browser doesn't support it
       // so let's polyfill a few things for the user
@@ -144,7 +148,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       // initialize the properties on the component module prototype
       initHostConstructor(plt, HostElementConstructor.prototype, hydratedCssClass);
 
-      if (_include_observe_attr_) {
+      if ($build_observe_attr) {
         // add which attributes should be observed
         const observedAttributes: string[] = [];
 
@@ -177,7 +181,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
   function isDefinedComponent(elm: Element) {
     // check if this component is already defined or not
-    return globalDefined.indexOf(elm.tagName.toLowerCase()) > -1 || !!getComponentMeta(elm);
+    return globalDefined.indexOf(domApi.$tagName(elm)) > -1 || !!getComponentMeta(elm);
   }
 
 
@@ -209,7 +213,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
     loadedBundles[bundleId] = true;
   };
 
-  if (_include_styles_) {
+  if ($build_styles) {
     App.loadStyles = function loadStyles() {
       // jsonp callback from requested bundles
       // either directly add styles to document.head or add the
@@ -258,7 +262,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
   function requestBundle(cmpMeta: ComponentMeta, bundleId: string) {
     // create the url we'll be requesting
-    const url = publicPath + bundleId + ((_include_scoped_css_ && useScopedCss(supportsNativeShadowDom, cmpMeta) ? '.sc' : '') + '.js');
+    const url = publicPath + bundleId + (($build_scoped_css && useScopedCss(supportsNativeShadowDom, cmpMeta) ? '.sc' : '') + '.js');
 
     if (pendingBundleRequests[url]) {
       // we're already actively requesting this url
@@ -298,7 +302,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
 
   function attachStyles(cmpMeta: ComponentMeta, elm: HostElement) {
-    if (_include_styles_) {
+    if ($build_styles) {
       const tagForStyles = cmpMeta.tagNameMeta;
       const templateElm = styleTemplates[tagForStyles];
 
@@ -347,7 +351,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   }
 
   var supportsEventOptions = false;
-  if (_include_event_) {
+  if ($build_event) {
     // test if this browser supports event options or not
     try {
       win.addEventListener('eopt', null,
@@ -369,15 +373,15 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   }
 
   function onError(err: Error, type: RUNTIME_ERROR, elm: HostElement) {
-    console.error(err, type, elm && elm.tagName);
+    console.error(err, type, elm && domApi.$tagName(elm));
   }
 
   function propConnect(ctrlTag: string) {
-    return _include_prop_connect_ ? proxyController(domApi, controllerComponents, ctrlTag) : undefined;
+    return $build_prop_connect ? proxyController(domApi, controllerComponents, ctrlTag) : undefined;
   }
 
   function getContextItem(contextKey: string) {
-    if (_include_prop_context_) {
+    if ($build_prop_context) {
       return Context[contextKey];
     }
   }

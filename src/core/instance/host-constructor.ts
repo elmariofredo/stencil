@@ -5,7 +5,7 @@ import { initLoad } from './init';
 import { HostElement, PlatformApi } from '../../util/interfaces';
 import { queueUpdate } from './update';
 import { render } from './render';
-import { _include_observe_attr_ } from '../../util/core-include';
+import { $build_observe_attr } from '../../util/core-build';
 
 
 export function initHostConstructor(plt: PlatformApi, HostElementConstructor: HostElement, hydratedCssClass?: string) {
@@ -16,7 +16,7 @@ export function initHostConstructor(plt: PlatformApi, HostElementConstructor: Ho
     connectedCallback(plt, (this as HostElement));
   };
 
-  if (_include_observe_attr_) {
+  if ($build_observe_attr) {
     HostElementConstructor.attributeChangedCallback = function(attribName: string, oldVal: string, newVal: string) {
       attributeChangedCallback(plt, (this as HostElement), attribName, oldVal, newVal);
     };

@@ -314,20 +314,46 @@ export interface CompiledModeStyles {
 }
 
 
-export interface CoreIncludeSections {
-  _include_custom_slot_: boolean;
-  _include_element_: boolean;
-  _include_event_: boolean;
-  _include_verbose_error_: boolean;
-  _include_listen_: boolean;
-  _include_mutation_obs_: boolean;
-  _include_prop_: boolean;
-  _include_prop_did_change_: boolean;
-  _include_prop_will_change_: boolean;
-  _include_scoped_css_: boolean;
-  _include_shadow_dom_: boolean;
-  _include_ssr_: boolean;
-  _include_state_: boolean;
+export interface CoreBuild {
+  coreId?: string;
+  polyfills?: boolean;
+
+  $build_es2015?: boolean;
+  $build_es5?: boolean;
+  $build_verbose_error?: boolean;
+  $build_custom_slot?: boolean;
+
+  $build_ssr_parser?: boolean;
+  $build_ssr_serializer?: boolean;
+
+  $build_styles?: boolean;
+  $build_scoped_css?: boolean;
+  $build_shadow_dom?: boolean;
+
+  $build_render?: boolean;
+  $build_host_render?: boolean;
+  $build_svg_render?: boolean;
+
+  // decorators
+  $build_element?: boolean;
+  $build_event?: boolean;
+  $build_listener?: boolean;
+  $build_method?: boolean;
+  $build_observe_attr?: boolean;
+  $build_prop?: boolean;
+  $build_prop_connect?: boolean;
+  $build_prop_context?: boolean;
+  $build_prop_did_change?: boolean;
+  $build_prop_will_change?: boolean;
+  $build_state?: boolean;
+
+  // lifecycle events
+  $build_did_load?: boolean;
+  $build_will_load?: boolean;
+  $build_did_update?: boolean;
+  $build_will_update?: boolean;
+  $build_did_unload?: boolean;
+  $build_will_unload?: boolean;
 }
 
 
@@ -476,6 +502,7 @@ export interface BuildResults {
 
 export interface BuildContext {
   moduleFiles?: ModuleFiles;
+  manifestBundles?: ManifestBundle[];
   jsFiles?: FilesMap;
   cssFiles?: FilesMap;
   compiledFileCache?: ModuleBundles;
@@ -494,11 +521,12 @@ export interface BuildContext {
     registryJson?: string;
     indexHtml?: string;
     components_d_ts?: string;
+    [key: string]: string;
   };
   watcher?: FSWatcher;
   tsConfig?: any;
   hasIndexHtml?: boolean;
-  coreIncludeSections?: CoreIncludeSections;
+  coreBuild?: CoreBuild;
 
   isRebuild?: boolean;
   isChangeBuild?: boolean;
@@ -1068,12 +1096,12 @@ export interface StencilSystem {
   }): Promise<string[]>;
   isGlob?(str: string): boolean;
   loadConfigFile?(configPath: string): BuildConfig;
-  minifyCss?(input: string): {
+  minifyCss?(input: string, opts?: any): {
     output: string;
     sourceMap?: any;
     diagnostics?: Diagnostic[];
   };
-  minifyJs?(input: string): {
+  minifyJs?(input: string, opts?: any): {
     output: string;
     sourceMap?: any;
     diagnostics?: Diagnostic[];

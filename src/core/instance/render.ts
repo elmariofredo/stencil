@@ -2,11 +2,11 @@ import { ComponentMeta, HostElement, PlatformApi } from '../../util/interfaces';
 import { createThemedClasses } from '../../util/theme';
 import { h } from '../renderer/h';
 import { VNode as VNodeObj } from '../renderer/vnode';
-import { _include_host_render_, _include_render_, _include_styles_ } from '../../util/core-include';
+import { $build_host_render, $build_render, $build_styles } from '../../util/core-build';
 
 
 export function render(plt: PlatformApi, elm: HostElement, cmpMeta: ComponentMeta, isUpdateRender: boolean) {
-  if (_include_render_) {
+  if ($build_render) {
     jsxRender(plt, elm, cmpMeta, isUpdateRender);
   }
 
@@ -37,7 +37,7 @@ function jsxRender(plt: PlatformApi, elm: HostElement, cmpMeta: ComponentMeta, i
   if (instance.render || instance.hostData || hostMeta) {
     const vnodeChildren = instance.render && instance.render();
 
-    if (_include_host_render_) {
+    if ($build_host_render) {
       vnodeHostData = instance.hostData && instance.hostData();
 
       if (hostMeta) {
@@ -74,7 +74,7 @@ function jsxRender(plt: PlatformApi, elm: HostElement, cmpMeta: ComponentMeta, i
       cmpMeta.encapsulation
     );
 
-    if (_include_styles_) {
+    if ($build_styles) {
       // attach the styles this component needs, if any
       // this fn figures out if the styles should go in a
       // shadow root or if they should be global

@@ -1,5 +1,6 @@
 import { HostElement, PlatformApi } from '../../util/interfaces';
 import { parsePropertyValue } from '../../util/data-parse';
+import { toLowerCase } from '../../util/helpers';
 
 
 export function attributeChangedCallback(plt: PlatformApi, elm: HostElement, attribName: string, oldVal: string, newVal: string) {
@@ -7,7 +8,7 @@ export function attributeChangedCallback(plt: PlatformApi, elm: HostElement, att
   if (oldVal !== newVal) {
 
     // normalize the attribute name w/ lower case
-    attribName = attribName.toLowerCase();
+    attribName = toLowerCase(attribName);
 
     // using the known component meta data
     // look up to see if we have a property wired up to this attribute name

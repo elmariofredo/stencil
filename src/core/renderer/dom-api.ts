@@ -1,4 +1,5 @@
 import { DomApi } from '../../util/interfaces';
+import { toLowerCase } from '../../util/helpers';
 
 
 export function createDomApi(document: Document): DomApi {
@@ -13,79 +14,53 @@ export function createDomApi(document: Document): DomApi {
 
     $body: document.body,
 
-    $nodeType: function nodeType(node: any) {
-      return node.nodeType;
-    },
+    $nodeType: (node: any) => node.nodeType,
 
-    $createEvent: function createEvent() {
-      return document.createEvent('CustomEvent');
-    },
+    $createEvent: () => document.createEvent('CustomEvent'),
 
-    $createElement: function createElement(tagName: any) {
-      return document.createElement(tagName);
-    },
+    $createElement: (tagName: any) => document.createElement(tagName),
 
-    $createElementNS: function createElementNS(namespace: string, tagName: string) {
-      return document.createElementNS(namespace, tagName);
-    },
+    $createElementNS: (namespace: string, tagName: string) => document.createElementNS(namespace, tagName),
 
-    $createTextNode: function createTextNode(text: string) {
-      return document.createTextNode(text);
-    },
+    $createTextNode: (text: string) => document.createTextNode(text),
 
-    $createComment: function createComment(data: string) {
-      return document.createComment(data);
-    },
+    $createComment: (data: string) => document.createComment(data),
 
-    $insertBefore: function insertBefore(parentNode: Node, childNode: Node, referenceNode: Node) {
+    $insertBefore: (parentNode: Node, childNode: Node, referenceNode: Node) => {
       parentNode.insertBefore(childNode, referenceNode);
     },
 
-    $removeChild: function removeChild(parentNode: Node, childNode: Node) {
-      return parentNode.removeChild(childNode);
-    },
+    $removeChild: (parentNode: Node, childNode: Node) => parentNode.removeChild(childNode),
 
-    $appendChild: function appendChild(parentNode: Node, childNode: Node) {
+    $appendChild: (parentNode: Node, childNode: Node) => {
       parentNode.appendChild(childNode);
     },
 
-    $childNodes: function childNodes(node: Node) {
-      return node.childNodes;
-    },
+    $childNodes: (node: Node) => node.childNodes,
 
-    $parentNode: function parentNode(node: Node) {
-      return node.parentNode;
-    },
+    $parentNode: (node: Node) => node.parentNode,
 
-    $nextSibling: function nextSibling(node: Node) {
-      return node.nextSibling;
-    },
+    $nextSibling: (node: Node) => node.nextSibling,
 
-    $tagName: function tagName(elm: Element) {
-      return elm.tagName;
-    },
+    $tagName: (elm: Element) => toLowerCase(elm.tagName),
 
-    $getTextContent: function(node: any) {
-      return node.textContent;
-    },
+    $getTextContent: (node: any) => node.textContent,
 
-    $setTextContent: function setTextContent(node: Node, text: string) {
+    $setTextContent: (node: Node, text: string) => {
       node.textContent = text;
     },
 
-    $getAttribute: function getAttribute(elm: Element, key: any) {
-      return elm.getAttribute(key);
-    },
+    $getAttribute: (elm: Element, key: any) => elm.getAttribute(key),
 
-    $setAttribute: function setAttribute(elm: Element, key: string, val: string) {
+    $setAttribute: (elm: Element, key: string, val: string) => {
       elm.setAttribute(key, val);
     },
 
-    $setAttributeNS: function $setAttributeNS(elm: Element, namespaceURI: string, qualifiedName: string, val: string) {
+    $setAttributeNS: (elm: Element, namespaceURI: string, qualifiedName: string, val: string) => {
       elm.setAttributeNS(namespaceURI, qualifiedName, val);
     },
 
-    $removeAttribute: function removeAttribute(elm: Element, key: string) {
+    $removeAttribute: (elm: Element, key: string) => {
       elm.removeAttribute(key);
     }
 

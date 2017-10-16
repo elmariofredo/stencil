@@ -1,5 +1,5 @@
 import { createRendererPatch } from '../patch';
-import { createVNodesFromSsr } from '../slot';
+import { parseVNodesFromSsr } from '../slot';
 import { ENCAPSULATION, SSR_VNODE_ID, SSR_CHILD_ID } from '../../../util/constants';
 import { h } from '../h';
 import { HostContentNodes, VNode } from '../../../util/interfaces';
@@ -26,7 +26,7 @@ describe('ssr', () => {
       `;
       removeWhitespaceFromNodes(rootElm);
 
-      createVNodesFromSsr(domApi, rootElm);
+      parseVNodesFromSsr(domApi, rootElm);
 
       const cmpA: VNode = (<any>rootElm).querySelector('cmp-a')._vnode;
       expect(cmpA.vchildren.length).toBe(1);
@@ -59,7 +59,7 @@ describe('ssr', () => {
       `;
       removeWhitespaceFromNodes(rootElm);
 
-      createVNodesFromSsr(domApi, rootElm);
+      parseVNodesFromSsr(domApi, rootElm);
 
       const cmpA: VNode = (<any>rootElm).querySelector('cmp-a')._vnode;
       expect(cmpA.vchildren.length).toBe(1);
@@ -107,7 +107,7 @@ describe('ssr', () => {
       `;
       removeWhitespaceFromNodes(rootElm);
 
-      createVNodesFromSsr(domApi, rootElm);
+      parseVNodesFromSsr(domApi, rootElm);
 
       const cmpA: VNode = (<any>rootElm).querySelector('cmp-a')._vnode;
       expect(cmpA.vchildren.length).toBe(2);

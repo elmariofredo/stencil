@@ -2,7 +2,7 @@ import { HostElement, PlatformApi } from '../../util/interfaces';
 import { getParentElement } from '../../util/helpers';
 import { initElementListeners } from './listeners';
 import { PRIORITY } from '../../util/constants';
-import { _include_listen_ } from '../../util/core-include';
+import { $build_listener } from '../../util/core-build';
 
 
 export function connectedCallback(plt: PlatformApi, elm: HostElement) {
@@ -15,7 +15,7 @@ export function connectedCallback(plt: PlatformApi, elm: HostElement) {
     // if somehow this node was reused, ensure we've removed this property
     delete elm._hasDestroyed;
 
-    if (_include_listen_) {
+    if ($build_listener) {
       // initialize our event listeners on the host element
       // we do this now so that we can listening to events that may
       // have fired even before the instance is ready

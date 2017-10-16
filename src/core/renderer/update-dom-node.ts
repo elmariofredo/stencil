@@ -1,5 +1,7 @@
 import { PlatformApi, VNode } from '../../util/interfaces';
-import { _include_event_ } from '../../util/core-include';
+import { toLowerCase } from '../../util/helpers';
+import { $build_event } from '../../util/core-build';
+
 
 let DEFAULT_OPTS: any = null;
 
@@ -52,12 +54,12 @@ function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, ne
     }
 
   // Event Handlers
-  } else if (_include_event_ && name[0] === 'o' && name[1] === 'n') {
+  } else if ($build_event && name[0] === 'o' && name[1] === 'n') {
 
     if (!DEFAULT_OPTS) {
       DEFAULT_OPTS = plt.getEventOptions();
     }
-    name = name.toLowerCase().substring(2);
+    name = toLowerCase(name).substring(2);
 
     if (newValue) {
       if (!oldValue) {
@@ -89,7 +91,7 @@ function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, ne
 
     if (BOOLEAN_ATTRS[name] === 1 && (!newValue || newValue === 'false')) {
       if (ns) {
-        elm.removeAttributeNS(XLINK_NS, name.toLowerCase());
+        elm.removeAttributeNS(XLINK_NS, toLowerCase(name));
 
       } else {
         elm.removeAttribute(name);
@@ -97,7 +99,7 @@ function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, ne
 
     } else if (typeof newValue !== 'function') {
       if (ns) {
-        elm.setAttributeNS(XLINK_NS, name.toLowerCase(), newValue);
+        elm.setAttributeNS(XLINK_NS, toLowerCase(name), newValue);
 
       } else {
         elm.setAttribute(name, newValue);
@@ -124,7 +126,7 @@ export function eventProxy(this: any, e: Event) {
   return (this as any)._listeners[e.type](e);
 }
 
-const BOOLEAN_ATTRS: any = {
+const BOOLEAN_ATTRS: {[attrName: string]: number} = {
   'allowfullscreen': 1,
   'async': 1,
   'autofocus': 1,

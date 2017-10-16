@@ -15,8 +15,12 @@ export function isNumber(v: any): v is (number) { return typeof v === 'number'; 
 
 export function isFunction(v: any): v is (Function) { return typeof v === 'function'; }
 
+export function toLowerCase(str: string) {
+  return str.toLowerCase();
+}
+
 export function toDashCase(str: string) {
-  return str.replace(/([A-Z])/g, (g) => '-' + g[0].toLowerCase());
+  return str.replace(/([A-Z])/g, (g) => '-' + toLowerCase(g[0]));
 }
 
 export function toTitleCase(str: string) {

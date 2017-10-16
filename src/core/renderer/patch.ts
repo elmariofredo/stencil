@@ -12,7 +12,7 @@ import { ENCAPSULATION } from '../../util/constants';
 import { isDef, isUndef } from '../../util/helpers';
 import { SSR_VNODE_ID, SSR_CHILD_ID } from '../../util/constants';
 import { updateElement, eventProxy } from './update-dom-node';
-import { _include_custom_slot_, _include_scoped_css_, _include_shadow_dom_, _include_ssr_, _include_svg_render_, _include_listen_ } from '../../util/core-include';
+import { $build_custom_slot, $build_scoped_css, $build_shadow_dom, $build_ssr_serialize, $build_svg_render, $build_listener } from '../../util/core-build';
 
 let isSvgMode = false;
 
@@ -25,7 +25,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
   function createElm(vnode: VNode, parentElm: Node, childIndex: number) {
     let i = 0;
 
-    if (_include_custom_slot_ && vnode.vtag === 'slot' && !useNativeShadowDom) {
+    if ($build_custom_slot && vnode.vtag === 'slot' && !useNativeShadowDom) {
       // this is the custom slot renderer
 
       if (hostContentNodes) {
@@ -78,9 +78,9 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
     } else {
       // create element
-      const elm = vnode.elm = ((_include_svg_render_ && isSvgMode || vnode.vtag === 'svg') ? domApi.$createElementNS('http://www.w3.org/2000/svg', vnode.vtag) : domApi.$createElement(vnode.vtag));
+      const elm = vnode.elm = (($build_svg_render && isSvgMode || vnode.vtag === 'svg') ? domApi.$createElementNS('http://www.w3.org/2000/svg', vnode.vtag) : domApi.$createElement(vnode.vtag));
 
-      if (_include_svg_render_) {
+      if ($build_svg_render) {
         isSvgMode = vnode.vtag === 'svg' ? true : (vnode.vtag === 'foreignObject' ? false : isSvgMode);
       }
 
@@ -95,7 +95,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
       const children = vnode.vchildren;
 
-      if (_include_ssr_ && isDef(ssrId)) {
+      if ($build_ssr_serialize && isDef(ssrId)) {
         // SSR ONLY: this is an SSR render and this
         // logic does not run on the client
 
@@ -115,7 +115,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
           // return node could have been null
           if (childNode) {
-            if (_include_ssr_ && isDef(ssrId) && childNode.nodeType === 3) {
+            if ($build_ssr_serialize && isDef(ssrId) && childNode.nodeType === 3) {
               // SSR ONLY: add the text node's start comment
               domApi.$appendChild(elm, domApi.$createComment('s.' + ssrId + '.' + i));
             }
@@ -123,7 +123,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
             // append our new node
             domApi.$appendChild(elm, childNode);
 
-            if (_include_ssr_ && isDef(ssrId) && childNode.nodeType === 3) {
+            if ($build_ssr_serialize && isDef(ssrId) && childNode.nodeType === 3) {
               // SSR ONLY: add the text node's end comment
               domApi.$appendChild(elm, domApi.$createComment('/'));
               domApi.$appendChild(elm, domApi.$createTextNode(' '));
@@ -164,7 +164,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
       var vnode = vnodes[startIdx];
 
       if (isDef(vnode)) {
-        if (_include_listen_ && isDef(vnode.elm)) {
+        if ($build_listener && isDef(vnode.elm)) {
           destroyListeners(vnode);
         }
 
@@ -292,7 +292,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
     const oldChildren = oldVNode.vchildren;
     const newChildren = newVNode.vchildren;
 
-    if (_include_svg_render_) {
+    if ($build_svg_render) {
       isSvgMode = newVNode.elm && newVNode.elm.parentElement != null && (newVNode.elm as SVGElement).ownerSVGElement !== undefined;
       isSvgMode = newVNode.vtag === 'svg' ? true : (newVNode.vtag === 'foreignObject' ? false : isSvgMode);
     }
@@ -325,7 +325,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
         removeVnodes(elm, oldChildren, 0, oldChildren.length - 1);
       }
 
-    } else if (_include_custom_slot_ && elm._hostContentNodes && elm._hostContentNodes.defaultSlot) {
+    } else if ($build_custom_slot && elm._hostContentNodes && elm._hostContentNodes.defaultSlot) {
       // this element has slotted content
       let parentElement = elm._hostContentNodes.defaultSlot[0].parentElement;
       domApi.$setTextContent(parentElement, newVNode.vtext);
@@ -353,7 +353,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
     isUpdatePatch;
     hostContentNodes = hostElementContentNodes;
     ssrId = ssrPatchId;
-    const tag = domApi.$tagName(oldVNode.elm).toLowerCase();
+    const tag = domApi.$tagName(oldVNode.elm);
     scopeId = (encapsulation === ENCAPSULATION.ScopedCss || (encapsulation === ENCAPSULATION.ShadowDom && !supportsNativeShadowDom)) ? 'data-' + tag : null;
 
     // use native shadow dom only if the component wants to use it
@@ -361,14 +361,14 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
     useNativeShadowDom = (encapsulation === ENCAPSULATION.ShadowDom && supportsNativeShadowDom);
 
     if (!isUpdate) {
-      if (_include_shadow_dom_ && useNativeShadowDom) {
+      if ($build_shadow_dom && useNativeShadowDom) {
         // this component SHOULD use native slot/shadow dom
         // this browser DOES support native shadow dom
         // and this is the first render
         // let's create that shadow root
         oldVNode.elm = (oldVNode.elm as HTMLElement).attachShadow({ mode: 'open' });
 
-      } else if (_include_scoped_css_ && scopeId) {
+      } else if ($build_scoped_css && scopeId) {
         // this host element should use scoped css
         // add the scope attribute to the host
         domApi.$setAttribute(oldVNode.elm, scopeId + '-host', '');

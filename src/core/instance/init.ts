@@ -4,7 +4,7 @@ import { createMutationObserver } from './mutation-observer';
 import { initProxy } from './proxy';
 import { replayQueuedEventsOnInstance } from './listeners';
 import { RUNTIME_ERROR } from '../../util/constants';
-import { _include_element_, _include_event_, _include_mutation_obs_, _include_did_load_, _include_prop_, _include_state_ } from '../../util/core-include';
+import { $build_element, $build_event, $build_custom_slot, $build_did_load, $build_prop, $build_state } from '../../util/core-build';
 
 
 export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
@@ -12,19 +12,19 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
   const cmpMeta = plt.getComponentMeta(elm);
   const instance: ComponentInstance = elm.$instance = new cmpMeta.componentModule();
 
-  if (_include_element_) {
+  if ($build_element) {
     // let's automatically add a reference to the host element on the instance
     instance.__el = elm;
   }
 
-  if (_include_prop_ || _include_state_) {
+  if ($build_prop || $build_state) {
     // so we've got an host element now, and a actual instance
     // let's wire them up together with getter/settings
     // the setters are use for change detection and knowing when to re-render
     initProxy(plt, elm, instance, cmpMeta);
   }
 
-  if (_include_event_) {
+  if ($build_event) {
     // add each of the event emitters which wire up instance methods
     // to fire off dom events from the host element
     initEventEmitters(plt, cmpMeta.eventsMeta, instance);
@@ -38,7 +38,7 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
     }
   }
 
-  if (_include_mutation_obs_) {
+  if ($build_custom_slot) {
     // Create a mutation observer that will identify changes to the elements
     // children. When mutations occur rerender.  This only creates the observer
     // it does not start observing.
@@ -73,7 +73,7 @@ export function initLoad(plt: PlatformApi, elm: HostElement, hydratedCssClass?: 
         delete elm._onReadyCallbacks;
       }
 
-      if (_include_did_load_) {
+      if ($build_did_load) {
         // fire off the user's componentDidLoad method (if one was provided)
         // componentDidLoad only runs ONCE, after the instance's element has been
         // assigned as the host element, and AFTER render() has been called

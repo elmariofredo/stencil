@@ -1,7 +1,7 @@
-import { AppRegistry, BuildConfig, BuildContext, CoreIncludeSections } from '../../util/interfaces';
-import { CORE_NAME, GLOBAL_NAME } from '../../util/constants';
+import { AppRegistry, BuildConfig, BuildContext } from '../../util/interfaces';
+import { GLOBAL_NAME } from '../../util/constants';
 import { formatComponentRegistry } from '../../util/data-serialize';
-import { generateCore, generateCoreES5WithPolyfills, APP_CORE_FILENAME_PLACEHOLDER } from './app-core';
+import { generateCore } from './app-core-build';
 import { generateLoader } from './app-loader';
 import { generateAppGlobal, generateGlobalJs } from './app-global';
 import { hasError, normalizePath } from '../util';
@@ -24,8 +24,6 @@ export function generateAppFiles(config: BuildConfig, ctx: BuildContext) {
     components: formatComponentRegistry(ctx.registry),
     loader: `../${appLoader}`,
   };
-
-  setCoreIncludeSections(ctx.coreIncludeSections);
 
   // bundle the app's entry file (if one was provided)
   return generateAppGlobal(config, ctx).then(globalJsContents => {
@@ -51,76 +49,73 @@ export function generateAppFiles(config: BuildConfig, ctx: BuildContext) {
       }
     }
 
-    return Promise.all([
-      generateCore(config, globalJsContents),
-      generateCoreES5WithPolyfills(config, globalJsContents)
-    ]);
+    return generateCore(config, ctx, globalJsContents);
 
-  }).then(results => {
-    let coreContent = results[0];
-    let coreEs5WithPolyfilledContent = results[1];
+  }).then(() => {
+    // let coreContent = results[0];
+    // // let coreEs5WithPolyfilledContent = results[1];
 
-    if (config.minifyJs) {
-      // prod mode renames the core file with its hashed content
-      const contentHash = sys.generateContentHash(coreContent, config.hashedFileNameLength);
-      appRegistry.core = `${appFileName}.${contentHash}.js`;
+    // if (config.minifyJs) {
+    //   // prod mode renames the core file with its hashed content
+    //   const contentHash = sys.generateContentHash(coreContent, config.hashedFileNameLength);
+    //   appRegistry.core = `${appFileName}.${contentHash}.js`;
 
-      const contentPolyfilledHash = sys.generateContentHash(coreEs5WithPolyfilledContent, config.hashedFileNameLength);
-      appRegistry.corePolyfilled = `${appFileName}.${contentPolyfilledHash}.pf.js`;
+    //   // const contentPolyfilledHash = sys.generateContentHash(coreEs5WithPolyfilledContent, config.hashedFileNameLength);
+    //   // appRegistry.corePolyfilled = `${appFileName}.${contentPolyfilledHash}.pf.js`;
 
-    } else {
-      // dev mode core filename just keeps the same name, no content hashing
-      appRegistry.core = `${appFileName}.${CORE_NAME}.js`;
+    // } else {
+    //   // dev mode core filename just keeps the same name, no content hashing
+    //   appRegistry.core = `${appFileName}.${CORE_NAME}.js`;
 
-      appRegistry.corePolyfilled = `${appFileName}.${CORE_NAME}.pf.js`;
-    }
+    //   appRegistry.corePolyfilled = `${appFileName}.${CORE_NAME}.pf.js`;
+    // }
 
 
-    // update the app core filename within the content
-    coreContent = coreContent.replace(APP_CORE_FILENAME_PLACEHOLDER, appRegistry.core);
+    // // update the app core filename within the content
+    // coreContent = coreContent.replace(APP_CORE_FILENAME_PLACEHOLDER, appRegistry.core);
 
-    if (ctx.appFiles.core !== coreContent) {
-      // core file is actually different from our last saved version
-      config.logger.debug(`build, write app core: ${appRegistry.core}`);
-      ctx.appFiles.core = coreContent;
+    // if (ctx.appFiles.core !== coreContent) {
+    //   // core file is actually different from our last saved version
+    //   config.logger.debug(`build, write app core: ${appRegistry.core}`);
+    //   ctx.appFiles.core = coreContent;
 
-      if (config.generateWWW) {
-        // write the www/build app core file
-        const appCoreWWW = normalizePath(sys.path.join(config.buildDir, appFileName, appRegistry.core));
-        ctx.filesToWrite[appCoreWWW] = coreContent;
-      }
+    //   if (config.generateWWW) {
+    //     // write the www/build app core file
+    //     const appCoreWWW = normalizePath(sys.path.join(config.buildDir, appFileName, appRegistry.core));
+    //     ctx.filesToWrite[appCoreWWW] = coreContent;
+    //   }
 
-      if (config.generateDistribution) {
-        // write the dist/ app core file
-        const appCoreDist = normalizePath(sys.path.join(config.distDir, appFileName, appRegistry.core));
-        ctx.filesToWrite[appCoreDist] = coreContent;
-      }
+    //   if (config.generateDistribution) {
+    //     // write the dist/ app core file
+    //     const appCoreDist = normalizePath(sys.path.join(config.distDir, appFileName, appRegistry.core));
+    //     ctx.filesToWrite[appCoreDist] = coreContent;
+    //   }
 
-      ctx.appFileBuildCount++;
-    }
+    //   ctx.appFileBuildCount++;
+    // }
 
     // update the app core filename within the content
-    coreEs5WithPolyfilledContent = coreEs5WithPolyfilledContent.replace(APP_CORE_FILENAME_PLACEHOLDER, appRegistry.core);
+    // coreEs5WithPolyfilledContent = coreEs5WithPolyfilledContent.replace(APP_CORE_FILENAME_PLACEHOLDER, appRegistry.core);
 
-    if (ctx.appFiles.corePolyfilled !== coreEs5WithPolyfilledContent) {
-      // core polyfilled file is actually different from our last saved version
-      config.logger.debug(`build, app core polyfilled: ${appRegistry.core}`);
-      ctx.appFiles.corePolyfilled = coreEs5WithPolyfilledContent;
+    // if (ctx.appFiles.corePolyfilled !== coreEs5WithPolyfilledContent) {
+    //   // core polyfilled file is actually different from our last saved version
+    //   config.logger.debug(`build, app core polyfilled: ${appRegistry.core}`);
+    //   ctx.appFiles.corePolyfilled = coreEs5WithPolyfilledContent;
 
-      if (config.generateWWW) {
-        // write the www/build app core polyfilled file
-        const appCorePolyfilledWWW = normalizePath(sys.path.join(config.buildDir, appFileName, appRegistry.corePolyfilled));
-        ctx.filesToWrite[appCorePolyfilledWWW] = coreEs5WithPolyfilledContent;
-      }
+    //   if (config.generateWWW) {
+    //     // write the www/build app core polyfilled file
+    //     const appCorePolyfilledWWW = normalizePath(sys.path.join(config.buildDir, appFileName, appRegistry.corePolyfilled));
+    //     ctx.filesToWrite[appCorePolyfilledWWW] = coreEs5WithPolyfilledContent;
+    //   }
 
-      if (config.generateDistribution) {
-        // write the dist app core polyfilled file
-        const appCorePolyfilledDist = normalizePath(sys.path.join(config.distDir, appFileName, appRegistry.corePolyfilled));
-        ctx.filesToWrite[appCorePolyfilledDist] = coreEs5WithPolyfilledContent;
-      }
+    //   if (config.generateDistribution) {
+    //     // write the dist app core polyfilled file
+    //     const appCorePolyfilledDist = normalizePath(sys.path.join(config.distDir, appFileName, appRegistry.corePolyfilled));
+    //     ctx.filesToWrite[appCorePolyfilledDist] = coreEs5WithPolyfilledContent;
+    //   }
 
-      ctx.appFileBuildCount++;
-    }
+    //   ctx.appFileBuildCount++;
+    // }
 
   }).then(() => {
     // create the loader after creating the loader file name
@@ -170,12 +165,6 @@ export function generateAppFiles(config: BuildConfig, ctx: BuildContext) {
   }).catch(err => {
     config.logger.error('generateAppFiles', err);
   });
-}
-
-
-export function setCoreIncludeSections(coreIncludeSections: CoreIncludeSections) {
-  // figure out which sections of the core code this build doesn't even need
-  coreIncludeSections;
 }
 
 
