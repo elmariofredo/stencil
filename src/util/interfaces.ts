@@ -318,42 +318,42 @@ export interface CoreBuild {
   coreId?: string;
   polyfills?: boolean;
 
-  $build_es2015?: boolean;
-  $build_es5?: boolean;
-  $build_verbose_error?: boolean;
-  $build_custom_slot?: boolean;
+  $build_es2015: boolean;
+  $build_es5: boolean;
+  $build_verbose_error: boolean;
+  $build_custom_slot: boolean;
 
-  $build_ssr_parser?: boolean;
-  $build_ssr_serializer?: boolean;
+  $build_ssr_parser: boolean;
+  $build_ssr_serializer: boolean;
 
-  $build_styles?: boolean;
-  $build_scoped_css?: boolean;
-  $build_shadow_dom?: boolean;
+  $build_styles: boolean;
+  $build_scoped_css: boolean;
+  $build_shadow_dom: boolean;
 
-  $build_render?: boolean;
-  $build_host_render?: boolean;
-  $build_svg_render?: boolean;
+  $build_render: boolean;
+  $build_host_render: boolean;
+  $build_svg_render: boolean;
 
   // decorators
-  $build_element?: boolean;
-  $build_event?: boolean;
-  $build_listener?: boolean;
-  $build_method?: boolean;
-  $build_observe_attr?: boolean;
-  $build_prop?: boolean;
-  $build_prop_connect?: boolean;
-  $build_prop_context?: boolean;
-  $build_prop_did_change?: boolean;
-  $build_prop_will_change?: boolean;
-  $build_state?: boolean;
+  $build_element: boolean;
+  $build_event: boolean;
+  $build_listener: boolean;
+  $build_method: boolean;
+  $build_observe_attr: boolean;
+  $build_prop: boolean;
+  $build_prop_connect: boolean;
+  $build_prop_context: boolean;
+  $build_prop_did_change: boolean;
+  $build_prop_will_change: boolean;
+  $build_state: boolean;
 
   // lifecycle events
-  $build_did_load?: boolean;
-  $build_will_load?: boolean;
-  $build_did_update?: boolean;
-  $build_will_update?: boolean;
-  $build_did_unload?: boolean;
-  $build_will_unload?: boolean;
+  $build_did_load: boolean;
+  $build_will_load: boolean;
+  $build_did_update: boolean;
+  $build_will_update: boolean;
+  $build_did_unload: boolean;
+  $build_will_unload: boolean;
 }
 
 
