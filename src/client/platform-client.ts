@@ -12,7 +12,7 @@ import { initHostConstructor } from '../core/instance/host-constructor';
 import { parseComponentMeta, parseComponentRegistry } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
-import { $build_render, $build_custom_slot, $build_ssr_parse, $build_event, $build_listener, $build_shadow_dom, $build_observe_attr, $build_styles, $build_scoped_css, $build_prop_connect, $build_prop_context } from '../util/core-build';
+import { $build_render, $build_custom_slot, $build_ssr_parser, $build_event, $build_listener, $build_shadow_dom, $build_observe_attr, $build_styles, $build_scoped_css, $build_prop_connect, $build_prop_context } from '../util/core-build';
 
 
 export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: Window, doc: Document, publicPath: string, hydratedCssClass: string): PlatformApi {
@@ -30,16 +30,16 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   Context.dom = createDomControllerClient(win, now);
 
   if ($build_listener) {
-    Context.addListener = function addListener(elm, eventName, cb, opts) {
+    Context.addListener = (elm, eventName, cb, opts) => {
       return addEventListener(plt, elm, eventName, cb, opts && opts.capture, opts && opts.passive);
     };
-    Context.enableListener = function enableListener(instance, eventName, enabled, attachTo) {
+    Context.enableListener = (instance, eventName, enabled, attachTo) => {
       enableEventListener(plt, instance, eventName, enabled, attachTo);
     };
   }
 
   if ($build_event) {
-    Context.emit = function emitEvent(elm: Element, eventName: string, data: EventEmitterData) {
+    Context.emit = (elm: Element, eventName: string, data: EventEmitterData) => {
       elm && elm.dispatchEvent(new WindowCustomEvent(
         Context.eventNameFn ? Context.eventNameFn(eventName) : eventName,
         data
@@ -86,13 +86,13 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   const rootElm = domApi.$documentElement as HostElement;
   rootElm.$rendered = true;
   rootElm.$activeLoading = [];
-  rootElm.$initLoad = function appLoadedCallback() {
+  rootElm.$initLoad = () => {
     // this will fire when all components have finished loaded
     rootElm._hasLoaded = true;
   };
 
 
-  if ($build_ssr_parse) {
+  if ($build_ssr_parser) {
     // if the HTML was generated from SSR then let's
     // walk the tree and generate vnodes out of the data
     parseVNodesFromSsr(domApi, rootElm);
@@ -185,7 +185,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   }
 
 
-  App.loadComponents = function loadComponents(bundleId, importFn) {
+  App.loadComponents = (bundleId, importFn) => {
     // https://youtu.be/Z-FPimCmbX8?t=31
     // jsonp tag team callback from requested bundles contain tags
     const args = arguments;
@@ -214,7 +214,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   };
 
   if ($build_styles) {
-    App.loadStyles = function loadStyles() {
+    App.loadStyles = () => {
       // jsonp callback from requested bundles
       // either directly add styles to document.head or add the
       // styles to a template tag to be cloned later for shadow roots
@@ -342,7 +342,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   var WindowCustomEvent = (win as any).CustomEvent;
   if (typeof WindowCustomEvent !== 'function') {
     // CustomEvent polyfill
-    WindowCustomEvent = function CustomEvent(event: any, data: EventEmitterData) {
+    WindowCustomEvent = (event: any, data: EventEmitterData) => {
       var evt = domApi.$createEvent();
       evt.initCustomEvent(event, data.bubbles, data.cancelable, data.detail);
       return evt;

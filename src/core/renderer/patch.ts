@@ -12,7 +12,7 @@ import { ENCAPSULATION } from '../../util/constants';
 import { isDef, isUndef } from '../../util/helpers';
 import { SSR_VNODE_ID, SSR_CHILD_ID } from '../../util/constants';
 import { updateElement, eventProxy } from './update-dom-node';
-import { $build_custom_slot, $build_scoped_css, $build_shadow_dom, $build_ssr_serialize, $build_svg_render, $build_listener } from '../../util/core-build';
+import { $build_custom_slot, $build_scoped_css, $build_shadow_dom, $build_ssr_serializer, $build_svg_render, $build_listener } from '../../util/core-build';
 
 let isSvgMode = false;
 
@@ -95,7 +95,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
       const children = vnode.vchildren;
 
-      if ($build_ssr_serialize && isDef(ssrId)) {
+      if ($build_ssr_serializer && isDef(ssrId)) {
         // SSR ONLY: this is an SSR render and this
         // logic does not run on the client
 
@@ -115,7 +115,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 
           // return node could have been null
           if (childNode) {
-            if ($build_ssr_serialize && isDef(ssrId) && childNode.nodeType === 3) {
+            if ($build_ssr_serializer && isDef(ssrId) && childNode.nodeType === 3) {
               // SSR ONLY: add the text node's start comment
               domApi.$appendChild(elm, domApi.$createComment('s.' + ssrId + '.' + i));
             }
@@ -123,7 +123,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
             // append our new node
             domApi.$appendChild(elm, childNode);
 
-            if ($build_ssr_serialize && isDef(ssrId) && childNode.nodeType === 3) {
+            if ($build_ssr_serializer && isDef(ssrId) && childNode.nodeType === 3) {
               // SSR ONLY: add the text node's end comment
               domApi.$appendChild(elm, domApi.$createComment('/'));
               domApi.$appendChild(elm, domApi.$createTextNode(' '));

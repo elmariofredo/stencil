@@ -1,8 +1,8 @@
 import { BuildConfig, BuildContext, ComponentMeta, CoreBuild, ManifestBundle } from '../../util/interfaces';
+import { buildCoreContent } from './build-core-content';
 import { ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../../util/constants';
 import { generatePreamble, normalizePath } from '../util';
 import { getAppFileName } from './generate-app-files';
-import { minifyCore } from './minify-core';
 
 
 export function generateCore(config: BuildConfig, ctx: BuildContext, globalJsContent: string[]) {
@@ -38,10 +38,10 @@ function generateCoreBuild(config: BuildConfig, ctx: BuildContext, coreBuild: Co
 
   // hardcode which features should and should not go in the core builds
   // process the transpiled code by removing unused code and minify when configured to do so
-  jsContent = minifyCore(config, ctx, coreBuild, jsContent);
+  jsContent = buildCoreContent(config, ctx, coreBuild, jsContent);
 
   // wrap the core js code together
-  jsContent = wrapCoreJs(config, jsContent);
+  // jsContent = wrapCoreJs(config, jsContent);
 
   if (coreBuild.polyfills) {
     // this build wants polyfills so let's
@@ -175,29 +175,29 @@ function getCoreBuilds(coreBuild: CoreBuild) {
   // without ssr parser
   // es2015
   coreBuilds.push({
+    ...coreBuild,
     coreId: 'core',
-    $build_es2015: true,
-    ...coreBuild
+    $build_es2015: true
   });
 
   // no custom slot
   // with ssr parser
   // es2015
   coreBuilds.push({
+    ...coreBuild,
     coreId: 'core.ssr',
     $build_es2015: true,
-    $build_ssr_parser: true,
-    ...coreBuild
+    $build_ssr_parser: true
   });
 
   // es5 gets everything
   coreBuilds.push({
+    ...coreBuild,
     coreId: 'core.pf',
     $build_es5: true,
     $build_custom_slot: true,
     $build_ssr_parser: true,
-    polyfills: true,
-    ...coreBuild
+    polyfills: true
   });
 
   return coreBuilds;

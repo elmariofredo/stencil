@@ -10,7 +10,7 @@ const plt = createPlatformClient(Context, App, window, document, publicPath, hyd
 plt.registerComponents(App.components).forEach(cmpMeta => {
   if ($build_es2015) {
     // standard custom element using es2015 class
-    plt.defineComponent(cmpMeta, 'class extends HTMLElement {}');
+    plt.defineComponent(cmpMeta, class extends HTMLElement {});
   }
 
   if ($build_es5) {

@@ -26,15 +26,11 @@ export function createDomApi(document: Document): DomApi {
 
     $createComment: (data: string) => document.createComment(data),
 
-    $insertBefore: (parentNode: Node, childNode: Node, referenceNode: Node) => {
-      parentNode.insertBefore(childNode, referenceNode);
-    },
+    $insertBefore: (parentNode: Node, childNode: Node, referenceNode: Node) => parentNode.insertBefore(childNode, referenceNode),
 
     $removeChild: (parentNode: Node, childNode: Node) => parentNode.removeChild(childNode),
 
-    $appendChild: (parentNode: Node, childNode: Node) => {
-      parentNode.appendChild(childNode);
-    },
+    $appendChild: (parentNode: Node, childNode: Node) => parentNode.appendChild(childNode),
 
     $childNodes: (node: Node) => node.childNodes,
 
@@ -46,23 +42,15 @@ export function createDomApi(document: Document): DomApi {
 
     $getTextContent: (node: any) => node.textContent,
 
-    $setTextContent: (node: Node, text: string) => {
-      node.textContent = text;
-    },
+    $setTextContent: (node: Node, text: string) => node.textContent = text,
 
     $getAttribute: (elm: Element, key: any) => elm.getAttribute(key),
 
-    $setAttribute: (elm: Element, key: string, val: string) => {
-      elm.setAttribute(key, val);
-    },
+    $setAttribute: (elm: Element, key: string, val: string) => elm.setAttribute(key, val),
 
-    $setAttributeNS: (elm: Element, namespaceURI: string, qualifiedName: string, val: string) => {
-      elm.setAttributeNS(namespaceURI, qualifiedName, val);
-    },
+    $setAttributeNS: (elm: Element, namespaceURI: string, qualifiedName: string, val: string) => elm.setAttributeNS(namespaceURI, qualifiedName, val),
 
-    $removeAttribute: (elm: Element, key: string) => {
-      elm.removeAttribute(key);
-    }
+    $removeAttribute: (elm: Element, key: string) => elm.removeAttribute(key)
 
   };
 

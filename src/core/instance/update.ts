@@ -11,7 +11,7 @@ export function queueUpdate(plt: PlatformApi, elm: HostElement) {
     elm._isQueuedForUpdate = true;
 
     // run the patch in the next tick
-    plt.queue.add(function queueUpdateNextTick() {
+    plt.queue.add(() => {
       // no longer queued
       elm._isQueuedForUpdate = false;
 
@@ -85,9 +85,7 @@ export function update(plt: PlatformApi, elm: HostElement) {
       // looks like the user return a promise!
       // let's not actually kick off the render
       // until the user has resolved their promise
-      userLifecyclePromise.then(function componentWillLoadResolved() {
-        renderUpdate(plt, elm, isInitialLoad);
-      });
+      userLifecyclePromise.then(() => renderUpdate(plt, elm, isInitialLoad));
 
     } else {
       // user never returned a promise so there's

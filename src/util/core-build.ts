@@ -4,8 +4,8 @@ export const $build_es5 = false;
 export const $build_verbose_error = true;
 export const $build_custom_slot = true;
 
-export const $build_ssr_parse = true;
-export const $build_ssr_serialize = true;
+export const $build_ssr_parser = true;
+export const $build_ssr_serializer = true;
 
 export const $build_styles = true;
 export const $build_scoped_css = true;
