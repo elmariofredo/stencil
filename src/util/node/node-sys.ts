@@ -73,6 +73,24 @@ export function getNodeSys(distRootDir: string, logger: Logger) {
       });
     },
 
+    ensureDirSync(dir: any) {
+      const fsExtra = require('fs-extra');
+      fsExtra.ensureDirSync(dir);
+    },
+
+    ensureFile(file: any) {
+      return new Promise((resolve, reject) => {
+        const fsExtra = require('fs-extra');
+        fsExtra.ensureFile(file, (err: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    },
+
     fs: fs,
 
     generateContentHash(content, length) {

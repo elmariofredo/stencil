@@ -1076,6 +1076,8 @@ export interface StencilSystem {
   };
   emptyDir?(dir: string): Promise<void>;
   ensureDir?(dir: string): Promise<void>;
+  ensureDirSync?(dir: string): void;
+  ensureFile?(dir: string): Promise<void>;
   fs?: {
     access(path: string, callback: (err: any) => void): void;
     accessSync(path: string | Buffer, mode?: number): void

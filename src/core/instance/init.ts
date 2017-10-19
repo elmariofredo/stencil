@@ -1,6 +1,5 @@
 import { ComponentInstance, HostElement, PlatformApi } from '../../util/interfaces';
 import { initEventEmitters } from './events';
-import { createMutationObserver } from './mutation-observer';
 import { initProxy } from './proxy';
 import { replayQueuedEventsOnInstance } from './listeners';
 import { RUNTIME_ERROR } from '../../util/constants';
@@ -36,13 +35,6 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement) {
     } catch (e) {
       plt.onError(e, RUNTIME_ERROR.QueueEventsError, elm);
     }
-  }
-
-  if ($build_custom_slot) {
-    // Create a mutation observer that will identify changes to the elements
-    // children. When mutations occur rerender.  This only creates the observer
-    // it does not start observing.
-    createMutationObserver(plt, elm);
   }
 }
 

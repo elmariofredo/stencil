@@ -1,9 +1,8 @@
 import { h } from '../h';
 import { VNode } from '../vnode';
 import { toVNode } from '../to-vnode';
-import { mockElement, mockDomApi, mockRenderer, mockPlatform, mockTextNode } from '../../../testing/mocks';
+import { mockElement, mockDomApi, mockRenderer, mockTextNode } from '../../../testing/mocks';
 import { ENCAPSULATION, SVG_NS } from '../../../util/constants';
-import { PlatformApi } from '../../../util/interfaces';
 const shuffle = require('knuth-shuffle').knuthShuffle;
 
 
@@ -38,20 +37,50 @@ describe('renderer', () => {
 
   describe('shadow dom', () => {
     const supportsShadowDom = true;
-    const plt: PlatformApi = mockPlatform(supportsShadowDom) as any;
-    const patch = mockRenderer(plt as any, domApi);
+    const patch = mockRenderer(null, domApi, supportsShadowDom);
 
-    it('adds host scope id to root element', () => {
+    it('does not attachShadow on update render', () => {
       elm = mockElement('my-tag');
       vnode0 = new VNode();
       vnode0.elm = elm;
+      let shadowOpts: any;
+      elm.attachShadow = (opts: any) => {
+        shadowOpts = opts;
+      };
+      elm = patch(vnode0, h('my-tag', null), true, null, ENCAPSULATION.ShadowDom).elm;
+      expect(shadowOpts).toBeUndefined();
+    });
+
+    it('attachShadow on first render', () => {
+      elm = mockElement('my-tag');
+      vnode0 = new VNode();
+      vnode0.elm = elm;
+      let shadowOpts: any;
+      elm.attachShadow = (opts: any) => {
+        shadowOpts = opts;
+        elm.shadowRoot = mockElement('shadowRoot');
+        return elm;
+      };
       elm = patch(vnode0, h('my-tag', null), false, null, ENCAPSULATION.ShadowDom).elm;
-      expect(elm.hasAttribute('data-my-tag-host')).toBe(true);
+      expect(elm.shadowRoot).toBeDefined();
+      expect(shadowOpts).toBeDefined();
+      expect(shadowOpts.mode).toBe('open');
     });
 
   });
 
   describe('scoped css', () => {
+
+    it('adds host scope id to shadow dom encapsulation root element, but doesnt support SD', () => {
+      elm = mockElement('my-tag');
+      vnode0 = new VNode();
+      vnode0.elm = elm;
+      elm.attachShadow = () => {
+        return elm;
+      };
+      elm = patch(vnode0, h('my-tag', null), false, null, ENCAPSULATION.ShadowDom).elm;
+      expect(elm.hasAttribute('data-my-tag-host')).toBe(true);
+    });
 
     it('adds scope id to child elements', () => {
       elm = mockElement('my-tag');
@@ -61,7 +90,7 @@ describe('renderer', () => {
       expect(elm.firstChild.hasAttribute('data-my-tag')).toBe(true);
     });
 
-    it('adds host scope id to root element', () => {
+    it('adds host scope id to scoped css encapsulation root element', () => {
       elm = mockElement('my-tag');
       vnode0 = new VNode();
       vnode0.elm = elm;
@@ -136,6 +165,16 @@ describe('renderer', () => {
       elm = patch(vnode1, vnode2).elm;
       expect(elm.classList.contains('i')).toBeTruthy();
       expect(elm.classList.contains('am')).toBeTruthy();
+      expect(!elm.classList.contains('horse')).toBeTruthy();
+    });
+
+    it('removes classes when class set to empty string', () => {
+      var vnode1 = h('i', { class: {i: true, am: true, horse: true } });
+      var vnode2 = h('i', { class: '' });
+      patch(vnode0, vnode1);
+      elm = patch(vnode1, vnode2).elm;
+      expect(elm.classList.contains('i')).toBeFalsy();
+      expect(elm.classList.contains('am')).toBeFalsy();
       expect(!elm.classList.contains('horse')).toBeTruthy();
     });
 

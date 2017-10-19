@@ -350,7 +350,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
     // patchVNode() is synchronous
     // so it is safe to set these variables and internally
     // the same patch() call will reference the same data
-    isUpdatePatch;
+    isUpdate = isUpdatePatch;
     hostContentNodes = hostElementContentNodes;
     ssrId = ssrPatchId;
     const tag = domApi.$tagName(oldVNode.elm);
@@ -393,7 +393,7 @@ export function createRendererPatch(plt: PlatformApi, domApi: DomApi, supportsNa
 export function destroyListeners(vnode: VNode) {
   if (vnode) {
     const elm = (vnode.elm as any);
-    if (elm._listeners) {
+    if (elm && elm._listeners) {
       for (var key in elm._listeners) {
         elm.removeEventListener(key, eventProxy, false);
       }

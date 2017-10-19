@@ -1,7 +1,6 @@
 import { HostElement, PlatformApi } from '../../util/interfaces';
 import { initComponentInstance } from './init';
 import { RUNTIME_ERROR } from '../../util/constants';
-import { stopObserving, startObserving } from './mutation-observer';
 import { $build_custom_slot, $build_will_load, $build_will_update, $build_did_update, $build_render } from '../../util/core-build';
 
 
@@ -97,11 +96,6 @@ export function update(plt: PlatformApi, elm: HostElement) {
 
 
 export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: boolean) {
-  if ($build_custom_slot) {
-    // stop the observer so that we do not observe our own changes
-    stopObserving(plt, elm);
-  }
-
   if ($build_render) {
     // if this component has a render function, let's fire
     // it off and generate a vnode for this
@@ -113,11 +107,6 @@ export function renderUpdate(plt: PlatformApi, elm: HostElement, isInitialLoad: 
     } catch (e) {
       plt.onError(e, RUNTIME_ERROR.RenderError, elm, true);
     }
-  }
-
-  if ($build_custom_slot) {
-    // after render we need to start the observer back up.
-    startObserving(plt, elm);
   }
 
   try {

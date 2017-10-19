@@ -50,7 +50,7 @@ Promise
 	.then(options => np(options.version, options))
 	.then(pkg => {
 		if (cli.flags.dryRun) {
-			console.log(`\n ${pkg.name} dry-run publish finished 🕵️`);
+			console.log(`\n ${pkg.name} dryrun publish finished 🕵️`);
 		} else {
 			console.log(`\n ${pkg.name} ${pkg.version} published 🎉`);
 		}

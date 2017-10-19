@@ -27,14 +27,14 @@ export function updateElement(plt: PlatformApi, oldVnode: VNode | null, newVnode
 }
 
 
-function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, newValue: any, isSvg: boolean) {
+export function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, newValue: any, isSvg: boolean) {
   let key;
 
   // Class
   if (name === 'class' && !isSvg) {
     if (oldValue !== newValue) {
-      let oldList = (oldValue == null) ? [] : oldValue.trim().split(/\s+/);
-      let newList = (newValue == null) ? [] : newValue.trim().split(/\s+/);
+      let oldList = (oldValue == null || oldValue === '') ? [] : oldValue.trim().split(/\s+/);
+      let newList = (newValue == null || newValue === '') ? [] : newValue.trim().split(/\s+/);
       let i, listLength;
 
       for (i = 0, listLength = oldList.length; i < listLength; i += 1) {
@@ -92,8 +92,8 @@ function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: any, ne
    * - check if elm contains name or if the value is array, object, or function
    */
   } else if (name !== 'list' && name !== 'type' && !isSvg &&
-      (name in elm || ['object', 'function'].indexOf(typeof newValue) !== -1)) {
-    setProperty(elm, name, newValue === null ? '' : newValue);
+      (name in elm || ['object', 'function', 'undefined'].indexOf(typeof newValue) !== -1)) {
+    setProperty(elm, name, newValue);
     if (newValue === undefined) {
       delete (elm as any)[name];
     }
