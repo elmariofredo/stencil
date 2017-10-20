@@ -11,7 +11,7 @@ export class NodeLogger implements Logger {
     this.process = opts.process;
     this.level = opts.level;
 
-    const sysUtil = require('./chalk.js');
+    const sysUtil = require('./sys-util.js');
     this.chalk = sysUtil.chalk;
   }
 
