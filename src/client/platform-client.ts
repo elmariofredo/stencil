@@ -290,15 +290,14 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
 
   function attachStyles(cmpMeta: ComponentMeta, modeName: string, elm: HostElement) {
-    const styleId = cmpMeta.tagNameMeta + (modeName ? `_${modeName}` : ``);
-    const templateElm = styleTemplates[styleId];
+    const templateElm = styleTemplates[cmpMeta.tagNameMeta + '_' + modeName] || styleTemplates[cmpMeta.tagNameMeta];
 
     if (templateElm) {
-      let styleContainerNode: Node = domApi.$head;
+      let styleContainerNode: HTMLElement = domApi.$head;
 
       if (supportsNativeShadowDom) {
         if (cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
-          styleContainerNode = elm.shadowRoot;
+          styleContainerNode = (elm.shadowRoot as any);
 
         } else {
           while ((elm as Node) = domApi.$parentNode(elm)) {
@@ -312,14 +311,15 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
       const appliedStyles = ((styleContainerNode as HostElement)._appliedStyles = (styleContainerNode as HostElement)._appliedStyles || {});
 
-      if (!appliedStyles[styleId]) {
+      if (!appliedStyles[templateElm.id]) {
         // we haven't added these styles to this element yet
         const styleElm = templateElm.content.cloneNode(true) as HTMLStyleElement;
 
-        domApi.$insertBefore(styleContainerNode, styleElm, styleContainerNode.firstChild);
+        const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
+        domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
 
         // remember we don't need to do this again for this element
-        appliedStyles[styleId] = true;
+        appliedStyles[templateElm.id] = true;
       }
     }
   }

@@ -92,11 +92,11 @@ function formatProps(membersMeta: MembersMeta) {
       d.push(0);
     }
 
-    if (memberMeta.propType === PROP_TYPE.Boolean || memberMeta.propType === PROP_TYPE.Number || memberMeta.propType === PROP_TYPE.String) {
+    if (memberMeta.propType === PROP_TYPE.Boolean || memberMeta.propType === PROP_TYPE.Number || memberMeta.propType === PROP_TYPE.String || memberMeta.propType === PROP_TYPE.Any) {
       d.push(memberMeta.propType);
 
     } else {
-      d.push(PROP_TYPE.Any);
+      d.push(PROP_TYPE.Unknown);
     }
 
     if (memberMeta.ctrlId) {
