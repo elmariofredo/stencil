@@ -261,6 +261,14 @@ function formatMemberMeta(memberName: string, memberMeta: MemberMeta) {
 
   d.push(`"${memberName}"`);
   d.push(formatMemberType(memberMeta.memberType));
+  if (typeof memberMeta.attribName === 'string') {
+    // observe the attribute
+    d.push('/** observe attribute **/ 1');
+
+  } else {
+    // do not observe the attribute
+    d.push('/** do not observe attribute **/ 0');
+  }
   d.push(formatPropType(memberMeta.propType));
   d.push(formatPropContext(memberMeta.ctrlId));
 
