@@ -7,3 +7,5 @@ exports.glob = require('glob');
 exports.isGlob = require('is-glob');
 
 exports.minimist = require('minimist');
+
+exports.semver = require('semver');

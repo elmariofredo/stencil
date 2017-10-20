@@ -8,7 +8,6 @@ require('any-observable/register/rxjs-all'); // eslint-disable-line import/no-un
 const Observable = require('any-observable');
 const streamToObservable = require('stream-to-observable');
 const readPkgUp = require('read-pkg-up');
-const hasYarn = require('has-yarn');
 const prerequisiteTasks = require('./lib/prerequisite');
 const gitTasks = require('./lib/git');
 const util = require('./lib/util');
@@ -105,5 +104,8 @@ module.exports = (input, opts) => {
 
 	return listr.run()
 		.then(() => readPkgUp())
-		.then(result => result.pkg);
+		.then(result => result.pkg)
+		.catch(err => {
+			console.log(err);
+		});
 };

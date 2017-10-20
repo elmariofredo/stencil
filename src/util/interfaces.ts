@@ -1109,6 +1109,10 @@ export interface StencilSystem {
       cb: (err: any, result: {css: string; stats: any}) => void
     ): void;
   };
+  semver?: {
+    gt: (a: string, b: string, loose?: boolean) => boolean;
+    lt: (a: string, b: string, loose?: boolean) => boolean;
+  };
   typescript?: any;
   url?: {
     parse(urlStr: string, parseQueryString?: boolean, slashesDenoteHost?: boolean): Url;
@@ -1265,7 +1269,7 @@ export interface StyleData {
 
 export interface PropData {
   name?: string;
-  type?: 'boolean'|'number'|'string';
+  type?: 'boolean'|'number'|'string'|'any';
   mutable?: boolean;
 }
 

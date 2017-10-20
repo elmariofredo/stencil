@@ -2,6 +2,7 @@ import { ComponentInstance, ComponentMeta, DomApi, HostElement,
   MembersMeta, PlatformApi, PropChangeMeta } from '../../util/interfaces';
 import { MEMBER_TYPE, PROP_CHANGE } from '../../util/constants';
 import { noop } from '../../util/helpers';
+import { parsePropertyValue } from '../../util/data-parse';
 import { queueUpdate } from './update';
 
 
@@ -52,14 +53,13 @@ export function proxyComponentInstance(plt: PlatformApi, cmpMeta: ComponentMeta,
   elm._values = elm._values || {};
 
   cmpMeta.membersMeta && Object.keys(cmpMeta.membersMeta).forEach(memberName => {
-    defineMembers(plt, cmpMeta, elm, instance, memberName);
+    defineMember(plt, cmpMeta, elm, instance, memberName);
   });
 }
 
 
-export function defineMembers(plt: PlatformApi, cmpMeta: ComponentMeta, elm: HostElement, instance: ComponentInstance, memberName: string) {
-  const membersMeta = cmpMeta.membersMeta;
-  const memberMeta = membersMeta[memberName];
+export function defineMember(plt: PlatformApi, cmpMeta: ComponentMeta, elm: HostElement, instance: ComponentInstance, memberName: string) {
+  const memberMeta = cmpMeta.membersMeta[memberName];
   const memberType = memberMeta.memberType;
 
   function getComponentProp() {
@@ -99,16 +99,28 @@ export function defineMembers(plt: PlatformApi, cmpMeta: ComponentMeta, elm: Hos
       elm._values[memberName] = (instance as any)[memberName];
     }
 
-    if (memberType !== MEMBER_TYPE.State && elm.hasOwnProperty(memberName)) {
-      // @Prop or @Prop({mutable:true})
-      // property values on the host element should
-      // override any default values on the component
-      // instance which is why this check is second
-      // we've already created getters/setters on the
-      // host elements's prototype so we're good
-      // so delete the "own" property
-      elm._values[memberName] = (elm as any)[memberName];
-      delete (elm as any)[memberName];
+    if (memberType !== MEMBER_TYPE.State) {
+      if (elm.hasOwnProperty(memberName)) {
+        // @Prop or @Prop({mutable:true})
+        // property values on the host element should
+        // override any default values on the component
+        // instance which is why this check is second
+        // we've already created getters/setters on the
+        // host elements's prototype so we're good
+        // so delete the "own" property
+        elm._values[memberName] = (elm as any)[memberName];
+        delete (elm as any)[memberName];
+      }
+
+      if (memberMeta.attribName) {
+        // check the prop value from the host element attribute
+        const hostAttrValue = elm.getAttribute(memberMeta.attribName);
+        if (hostAttrValue != null) {
+          // looks like we've got an attribute value
+          // let's set it to our internal values
+          elm._values[memberName] = parsePropertyValue(memberMeta.propType, hostAttrValue);
+        }
+      }
     }
 
     // add getter/setter to the component instance

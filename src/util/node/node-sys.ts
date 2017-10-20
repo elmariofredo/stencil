@@ -235,6 +235,8 @@ export function getNodeSys(distRootDir: string, logger: Logger) {
 
     resolveModule,
 
+    semver: sysUtil.semver,
+
     vm: {
       createContext,
       runInContext
