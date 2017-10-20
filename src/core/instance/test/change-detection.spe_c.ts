@@ -1,8 +1,8 @@
 import { mockPlatform, mockDomApi } from '../../../testing/mocks';
 import { ComponentMeta, ComponentInstance, PlatformApi } from '../../../util/interfaces';
 import { MEMBER_TYPE, PROP_TYPE } from '../../../util/constants';
-import { initProxy } from '../proxy';
-
+// import { initProxy } from '../proxy';
+let initProxy: any;
 
 describe('instance change detection', () => {
 

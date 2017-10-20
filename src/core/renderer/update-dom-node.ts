@@ -65,7 +65,7 @@ export function setAccessor(plt: PlatformApi, elm: any, name: string, oldValue: 
     }
 
   // Event Handlers
-  } else if (name[0] === 'o' && name[1] === 'n') {
+  } else if (name[0] === 'o' && name[1] === 'n' && (!(name in elm))) {
 
     if (!DEFAULT_OPTS) {
       DEFAULT_OPTS = plt.getEventOptions();

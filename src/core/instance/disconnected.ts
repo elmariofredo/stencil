@@ -1,7 +1,7 @@
 import { detachListeners } from './listeners';
 import { HostElement, PlatformApi } from '../../util/interfaces';
 import { invokeDestroy } from '../renderer/patch';
-import { propagateElementLoaded } from './init';
+import { propagateElementLoaded } from './init-component';
 
 
 export function disconnectedCallback(plt: PlatformApi, elm: HostElement) {

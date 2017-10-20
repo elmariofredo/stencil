@@ -8,7 +8,7 @@ import { createRendererPatch } from '../core/renderer/patch';
 import { createQueueClient } from './queue-client';
 import { ENCAPSULATION, RUNTIME_ERROR, SSR_VNODE_ID } from '../util/constants';
 import { h, t } from '../core/renderer/h';
-import { initHostConstructor } from '../core/instance/init';
+import { initHostConstructor } from '../core/instance/init-host';
 import { parseComponentMeta, parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
@@ -80,7 +80,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   const rootElm = domApi.$documentElement as HostElement;
   rootElm.$rendered = true;
   rootElm.$activeLoading = [];
-  rootElm.$initLoad = function appLoadedCallback() {
+  rootElm.$initLoad = () => {
     // this will fire when all components have finished loaded
     rootElm._hasLoaded = true;
   };
@@ -137,8 +137,8 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       // keep an array of all the defined components, useful for external frameworks
       globalDefined.push(tagName);
 
-      // initialize the properties on the component module prototype
-      initHostConstructor(plt, HostElementConstructor.prototype, hydratedCssClass);
+      // initialize the members on the host element prototype
+      initHostConstructor(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
 
       // add which attributes should be observed
       const observedAttributes: string[] = [];
@@ -186,7 +186,6 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
     for (var i = 2; i < args.length; i++) {
       // parse the external component data into internal component meta data
-      // then add our set of prototype methods to the component bundle
       parseComponentMeta(registry, moduleImports, args[i]);
     }
 

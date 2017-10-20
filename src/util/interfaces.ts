@@ -770,7 +770,6 @@ export interface ComponentInstance {
   color?: string;
 
   // private properties
-  __values?: ComponentInternalValues;
   __el?: HostElement;
 
   [memberName: string]: any;
@@ -788,8 +787,6 @@ export interface ComponentActivePropChanges {
 
 
 export interface ComponentInternalValues {
-  __propWillChange?: ComponentActivePropChanges;
-  __propDidChange?: ComponentActivePropChanges;
   [propName: string]: any;
 }
 
@@ -857,6 +854,7 @@ export interface HostElement extends HTMLElement {
   _root?: HTMLElement | ShadowRoot;
   _vnode: VNode;
   _appliedStyles?: { [tagNameForStyles: string]: boolean };
+  _values?: ComponentInternalValues;
 }
 
 
