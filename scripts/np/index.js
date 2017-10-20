@@ -77,13 +77,9 @@ module.exports = (input, opts) => {
 			task: () => exec('npm', ['install', '--no-package-lock'], { cwd: dstDir })
 		},
 		{
-			title: 'Dedupe "dist" @stencil/core dependencies',
-			task: () => exec('npm', ['dedupe'], { cwd: dstDir })
-		},
-		{
-			title: 'Cleanup "dist" @stencil/core package',
-			task: () => exec('node', ['post-package.js'], { cwd: scriptsDir })
-		},
+			title: 'Build "dist" @stencil/core local dependencies',
+			task: () => exec('node', ['build-local-deps.js'], { cwd: scriptsDir })
+		}
 	];
 
 	if (opts.dryRun) {
